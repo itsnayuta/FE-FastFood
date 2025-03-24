@@ -1,6 +1,6 @@
 
 # FE-FastFood
-
+## Read to instal app to local
 ## Prerequisites
 Before running the application, ensure you have the following installed:
 
@@ -22,7 +22,7 @@ cd FE-FastFood
 
 Create a `local.properties` file inside the `android` folder and add the following line:
 ```properties
-sdk.dir=C:\Users\Username\AppData\Local\Android\sdk
+sdk.dir=C:\\Users\\Username\\AppData\\Local\\Android\\sdk
 ```
 > Replace `Username` with your actual machine username.
 
@@ -38,6 +38,10 @@ To launch the application on an Android device or emulator, run:
 yarn android
 ```
 > Ensure that you have an Android emulator running or a real device connected.
+> if you run with real devices: use this cmd to run faster
+```bash
+yarn android --active-arch-only
+```
 
 
 
