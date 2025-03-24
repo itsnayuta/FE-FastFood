@@ -1,14 +1,17 @@
 import React, { FC } from "react";
-import {View, Text, StyleSheet} from 'react-native'
+import MainNavigator from "./navigation/MainNavigator";
+import { NavigationContainer } from "@react-navigation/native";
 
 
 
 const App: React.FC = () => {
+
     return (
-        <View>
-            <Text>Hehe</Text>
-        </View>
-    )
+        <NavigationContainer>
+            <MainNavigator />
+        </NavigationContainer>
+    );
+
 }
 
 export default App
