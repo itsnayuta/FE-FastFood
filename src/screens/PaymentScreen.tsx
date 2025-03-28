@@ -156,7 +156,7 @@ const PaymentScreen: React.FC = () => {
                 {label}
               </Text>
               <Image 
-                // source={require(`./assets/icons/${method}_icon.png`)} 
+                //source={require(`../assets/_icon.png`)} 
                 style={styles.icon}
               />
             </TouchableOpacity>
