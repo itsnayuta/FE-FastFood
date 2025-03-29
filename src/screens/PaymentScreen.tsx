@@ -40,7 +40,7 @@ const PaymentScreen: React.FC = () => {
 
   const route = useRoute<PaymentScreenRouteProp>();
   const { foodItems, totalPrice } = route.params || { foodItems: [], totalPrice: 0 };
-
+  const shippingFee = 10000
 
   // State for form inputs
   const [formData, setFormData] = useState({
@@ -197,18 +197,43 @@ const PaymentScreen: React.FC = () => {
         {/* Order Summary */}
         <View style={styles.infoBox}>
           <Text style={styles.label}>TÓM TẮT ĐƠN HÀNG:</Text>
-          {foodItems.length > 0 ? (
-            foodItems.map((item, index) => (
-              <View key={index} style={styles.foodItem}>
-                <Text>{item.name} x {item.quality}</Text>
-                <Text>{item.price * item.quality} VND</Text>
-              </View>
-            ))
-          ) : (
-            <Text>Không có món ăn nào trong giỏ hàng.</Text>
-          )}
-          <Text style={styles.totalPrice}>Tổng tiền: {totalPrice} VND</Text>
+            {foodItems.length > 0 ? (
+              foodItems.map((item, index) => (
+                <View key={index} style={styles.foodItem}>
+                  <Text style={styles.foodText}>
+                    {item.quality}x {item.name}
+                  </Text>
+                  <Text style={styles.foodPrice}>
+                    {(item.price * item.quality).toLocaleString()} VND
+                  </Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.emptyText}>Không có món ăn nào trong giỏ hàng.</Text>
+            )}
+
+          <View style={styles.divider} />
+
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryText}>Tổng đơn hàng</Text>
+            <Text style={styles.summaryText}>{totalPrice.toLocaleString()} VND</Text>
+          </View>
+
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryText}>Phí giao hàng</Text>
+            <Text style={styles.summaryText}>{shippingFee.toLocaleString()} VND</Text>
+          </View>
+
+          <View style={styles.divider} />
+
+          <View style={styles.totalRow}>
+            <Text style={styles.totalLabel}>Tổng thanh toán</Text>
+            <Text style={styles.totalPrice}>
+              {(totalPrice + shippingFee).toLocaleString()} VND
+            </Text>
+          </View>
         </View>
+
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -220,6 +245,41 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#ddd",
+    marginVertical: 8,
+  },
+  foodText: {
+    fontSize: 14,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: "#777",
+    textAlign: "center",
+    paddingVertical: 10,
+  },
+  foodPrice: {
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  summaryRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 4,
+  },
+  summaryText: {
+    fontSize: 14,
+  },
+  totalRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingTop: 8,
+  },
+  totalLabel: {
+    fontSize: 16,
+    fontWeight: "bold",
   },
   scrollContainer: {
     flexGrow: 1,
