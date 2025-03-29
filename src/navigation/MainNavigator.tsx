@@ -2,6 +2,9 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
 import { CommonActions } from "@react-navigation/native";
+import { NavigationContainer } from '@react-navigation/native';
+
+
 import Header from "../components/Header";
 import HomeScreen from "../screens/HomeScreen";
 import BottomTab from "../components/BottomTab";
@@ -10,6 +13,7 @@ import MenuScreen from "../screens/MenuScreen";
 import CartScreen from "../screens/CartScreen";
 import OptionsScreen from "../screens/OptionsScreen";
 import PaymentScreen from "../screens/PaymentScreen"; 
+
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -58,11 +62,11 @@ const MainNavigator = () => {
 // Điều hướng giữa CartScreen và PaymentScreen
 const CartStack = () => {
     return (
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="CartMain" component={CartScreen} />
-            <Stack.Screen name="Payment" component={PaymentScreen} />
-        </Stack.Navigator>
-    );
+            <Stack.Navigator screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="CartMain" component={CartScreen} />
+                <Stack.Screen name="Payment" component={PaymentScreen} />
+            </Stack.Navigator>
+    )
 };
 
 export default MainNavigator;

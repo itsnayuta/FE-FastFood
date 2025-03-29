@@ -1,4 +1,8 @@
 import React, { useState } from 'react';
+import { useRoute } from '@react-navigation/native';
+import { createStackNavigator } from "@react-navigation/stack";
+import { NavigationProp, RouteProp } from '@react-navigation/native';
+import { RootStackParamList } from '../navigation';
 import {
   View,
   Text,
@@ -16,6 +20,7 @@ interface CustomCheckBoxProps {
   value: boolean;
   onValueChange: (newValue: boolean) => void;
 }
+type PaymentScreenRouteProp = RouteProp<RootStackParamList, "Payment">;
 
 const CustomCheckBox: React.FC<CustomCheckBoxProps> = ({ value, onValueChange }) => {
   return (
@@ -32,6 +37,10 @@ const CustomCheckBox: React.FC<CustomCheckBoxProps> = ({ value, onValueChange })
 
 const PaymentScreen: React.FC = () => {
   const navigation = useNavigation();
+
+  const route = useRoute<PaymentScreenRouteProp>();
+  const { foodItems, totalPrice } = route.params || { foodItems: [], totalPrice: 0 };
+
 
   // State for form inputs
   const [formData, setFormData] = useState({
@@ -53,10 +62,13 @@ const PaymentScreen: React.FC = () => {
   };
 
   const handlePayment = () => {
-    // Implement payment logic here
-    console.log('Payment initiated', { formData, selectedMethod });
+    console.log('Payment initiated', { formData, selectedMethod, foodItems, totalPrice });
   };
 
+  const icons = {
+    cod: require("../assets/icons/cod_icon.png"),
+    zalopay: require("../assets/icons/zalopay_icon.png"),
+  };
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
@@ -136,10 +148,10 @@ const PaymentScreen: React.FC = () => {
 
         {/* Payment Methods */}
         <View style={styles.infoBox}>
-          <Text style={styles.label}>PHƯƠNG THỨC THANH TOÁN:</Text>
+          <Text style={styles.label}>PHƯƠNG THỨC THANH TOÁN:</Text> 
           {[
             { method: 'cod', label: 'Thanh toán khi nhận hàng' },
-            { method: 'zalopay', label: 'Thanh toán bằng ATM/Visa/Master và Ví ZaloPay' },
+            { method: 'zalopay', label: 'Thanh toán bằng QR ZaloPay' },
           ].map(({ method, label }) => (
             <TouchableOpacity 
               key={method}
@@ -156,7 +168,7 @@ const PaymentScreen: React.FC = () => {
                 {label}
               </Text>
               <Image 
-                //source={require(`../assets/_icon.png`)} 
+                source={icons[method as 'cod' | 'zalopay']} 
                 style={styles.icon}
               />
             </TouchableOpacity>
@@ -185,7 +197,17 @@ const PaymentScreen: React.FC = () => {
         {/* Order Summary */}
         <View style={styles.infoBox}>
           <Text style={styles.label}>TÓM TẮT ĐƠN HÀNG:</Text>
-          {/* Add order summary details here */}
+          {foodItems.length > 0 ? (
+            foodItems.map((item, index) => (
+              <View key={index} style={styles.foodItem}>
+                <Text>{item.name} x {item.quality}</Text>
+                <Text>{item.price * item.quality} VND</Text>
+              </View>
+            ))
+          ) : (
+            <Text>Không có món ăn nào trong giỏ hàng.</Text>
+          )}
+          <Text style={styles.totalPrice}>Tổng tiền: {totalPrice} VND</Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -193,6 +215,8 @@ const PaymentScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  foodItem: { flexDirection: "row", justifyContent: "space-between", marginBottom: 5 },
+  totalPrice: { fontWeight: "bold", marginTop: 10, fontSize: 16 },
   container: {
     flex: 1,
     backgroundColor: "#fff",
