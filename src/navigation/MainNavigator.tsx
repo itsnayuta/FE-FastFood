@@ -13,7 +13,7 @@ import MenuScreen from "../screens/MenuScreen";
 import CartScreen from "../screens/CartScreen";
 import OptionsScreen from "../screens/OptionsScreen";
 import PaymentScreen from "../screens/PaymentScreen"; 
-
+import ChangeAddressScreen from "../screens/ChangeAddressScreen";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -68,5 +68,4 @@ const CartStack = () => {
             </Stack.Navigator>
     )
 };
-
 export default MainNavigator;
