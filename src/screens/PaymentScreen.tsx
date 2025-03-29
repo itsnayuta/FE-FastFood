@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useRoute } from '@react-navigation/native';
-import { createStackNavigator } from "@react-navigation/stack";
-import { NavigationProp, RouteProp } from '@react-navigation/native';
+import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation';
+import { useNavigation } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -14,12 +14,12 @@ import {
   Platform,
   Image,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 
 interface CustomCheckBoxProps {
   value: boolean;
   onValueChange: (newValue: boolean) => void;
 }
+
 type PaymentScreenRouteProp = RouteProp<RootStackParamList, "Payment">;
 
 const CustomCheckBox: React.FC<CustomCheckBoxProps> = ({ value, onValueChange }) => {
@@ -38,10 +38,10 @@ const CustomCheckBox: React.FC<CustomCheckBoxProps> = ({ value, onValueChange })
 const PaymentScreen: React.FC = () => {
   const navigation = useNavigation();
 
+  // ...
   const route = useRoute<PaymentScreenRouteProp>();
   const { foodItems, totalPrice } = route.params || { foodItems: [], totalPrice: 0 };
-  const shippingFee = 10000
-
+  
   // State for form inputs
   const [formData, setFormData] = useState({
     houseNumber: '',
@@ -56,14 +56,36 @@ const PaymentScreen: React.FC = () => {
 
   const [selectedMethod, setSelectedMethod] = useState<'cod' | 'zalopay'>('cod');
   const [agreePolicy, setAgreePolicy] = useState(false);
+  const shippingFee = 10000 // Shipping Free
 
+  const [error, setError] = useState<{ [key: string]: string }>({});
+
+
+  
   const handleInputChange = (field: keyof typeof formData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+
   const handlePayment = () => {
-    console.log('Payment initiated', { formData, selectedMethod, foodItems, totalPrice });
+    let newErrors: { [key: string]: string } = {};
+  
+    if (!formData.lastName.trim()) newErrors.lastName = "Vui lòng nhập họ.";
+    if (!formData.firstName.trim()) newErrors.firstName = "Vui lòng nhập tên.";
+    if (!formData.phoneNumber.trim()) newErrors.phoneNumber = "Vui lòng nhập số điện thoại.";
+    if (!formData.email.trim()) newErrors.email = "Vui lòng nhập email.";
+    if (!formData.streetName.trim()) newErrors.streetName = "Vui lòng nhập tên đường.";
+    if (!formData.ward.trim()) newErrors.ward = "Vui lòng nhập Phường/Xã.";
+
+    if (Object.keys(newErrors).length > 0) {
+      setError(newErrors);
+      return;
+    }
+  
+    setError({});
+    console.log('Payment initiated', { formData });
   };
+  
 
   const icons = {
     cod: require("../assets/icons/cod_icon.png"),
@@ -77,10 +99,11 @@ const PaymentScreen: React.FC = () => {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerText}>Được giao từ: KFC BIG C HỒ GƯƠM</Text>
+          <Text style={styles.headerText}>Được giao từ: FastFoood Hà Đông</Text>
           <TouchableOpacity style={styles.changeButton}>
             <Text style={styles.changeButtonText}>Thay đổi</Text>
           </TouchableOpacity>
+          
         </View>
 
         {/* Title */}
@@ -97,9 +120,9 @@ const PaymentScreen: React.FC = () => {
         {/* Delivery Location */}
         <View style={styles.infoBox}>
           <Text style={styles.label}>ĐƯỢC GIAO TỪ:</Text>
-          <Text style={styles.boldText}>KFC BIG C HỒ GƯƠM</Text>
+          <Text style={styles.boldText}>FastFood Hà Đông</Text>
           <Text>
-            Gian hàng số 8, Tầng 1, TTTM Hồ Gươm Plaza, P.Mộ Lao, Q.Hà Đông, Tp Hà Nội 12110
+            Gian hàng số 8, Tầng 1, Học viện PTIT, P.Mộ Lao, Q.Hà Đông, Tp Hà Nội
           </Text>
         </View>
 
@@ -111,15 +134,16 @@ const PaymentScreen: React.FC = () => {
             { key: 'streetName', label: 'Tên đường*', placeholder: 'Nhập tên đường' },
             { key: 'ward', label: 'Phường/ Xã*', placeholder: 'Nhập phường/xã' },
             { key: 'note', label: 'Ghi chú cho đơn hàng', placeholder: 'Nhập ghi chú (nếu có)' },
-          ].map(({ key, label, placeholder }) => (
+          ].map(({ key, label, placeholder}) => (
             <View key={key} style={styles.inputBox}>
               <Text style={styles.label}>{label}</Text>
               <TextInput 
-                style={styles.input} 
+                style={[styles.input, error[key] && styles.inputError]} 
                 placeholder={placeholder} 
                 value={formData[key as keyof typeof formData]} 
                 onChangeText={(value) => handleInputChange(key as keyof typeof formData, value)} 
               />
+              {error[key] && <Text style={styles.errorText}>{error[key]}</Text>}
             </View>
           ))}
         </View>
@@ -136,15 +160,17 @@ const PaymentScreen: React.FC = () => {
             <View key={key} style={styles.inputBox}>
               <Text style={styles.label}>{label}</Text>
               <TextInput 
-                style={styles.input} 
+                style={[styles.input, error[key] && styles.inputError]} 
                 placeholder={placeholder} 
                 keyboardType={keyboardType as any} 
                 value={formData[key as keyof typeof formData]} 
                 onChangeText={(value) => handleInputChange(key as keyof typeof formData, value)} 
               />
+              {error[key] && <Text style={styles.errorText}>{error[key]}</Text>}
             </View>
           ))}
         </View>
+
 
         {/* Payment Methods */}
         <View style={styles.infoBox}>
@@ -187,7 +213,7 @@ const PaymentScreen: React.FC = () => {
 
         {/* Payment Button */}
         <TouchableOpacity 
-          style={styles.paymentButton} 
+          style={[styles.paymentButton, !agreePolicy && styles.paymentButtonDisabled]} 
           onPress={handlePayment}
           disabled={!agreePolicy}
         >
@@ -245,6 +271,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  inputError: {
+    borderColor: "red",
+    borderWidth: 1,
+  },
+
+  errorText: {
+    color: "red",
+    fontSize: 12,
+    marginTop: 3,
   },
   divider: {
     height: 1,
@@ -415,7 +451,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   paymentButton: {
-    backgroundColor: "green", 
+    backgroundColor: "#52ed05", 
     paddingVertical: 15,
     marginHorizontal: 20,
     borderRadius: 8,
@@ -423,6 +459,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 20,
     marginTop:20,
+  },
+  paymentButtonDisabled: {
+    backgroundColor: "#ffcc99", 
   },
   paymentButtonText: {
     color: "#fff", // chữ trắng
