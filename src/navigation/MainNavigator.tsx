@@ -13,7 +13,8 @@ import MenuScreen from "../screens/MenuScreen";
 import CartScreen from "../screens/CartScreen";
 import OptionsScreen from "../screens/OptionsScreen";
 import PaymentScreen from "../screens/PaymentScreen"; 
-import ChangeAddressScreen from "../screens/ChangeAddressScreen";
+import ProcessingOrderScreen from "../screens/ProcessingOrderScreen"
+import OrderSuccessScreen from "../screens/OrderSuccessScreen"
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -65,6 +66,8 @@ const CartStack = () => {
             <Stack.Navigator screenOptions={{ headerShown: false }}>
                 <Stack.Screen name="CartMain" component={CartScreen} />
                 <Stack.Screen name="Payment" component={PaymentScreen} />
+                <Stack.Screen name="ProcessingOrder" component={ProcessingOrderScreen} />
+                <Stack.Screen name="OrderSuccess" component={OrderSuccessScreen} />
             </Stack.Navigator>
     )
 };
