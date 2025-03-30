@@ -1,3 +1,5 @@
+export type ScreenType = 'login' | 'onboarding' | 'signup';
+
 export interface FoodItem {
     id: number;
     name: string;
@@ -12,4 +14,6 @@ export type RootStackParamList = {
         foodItems: FoodItem[];
         totalPrice: number;
     };
+    ProcessingOrder: undefined;
+    OrderSuccess: undefined; 
 };

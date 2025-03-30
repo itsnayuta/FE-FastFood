@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useRoute } from '@react-navigation/native';
 import { RouteProp } from '@react-navigation/native';
-import { RootStackParamList } from '../navigation';
+import { RootStackParamList } from '../types';
 import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from "@react-navigation/stack";
 import {
   View,
   Text,
@@ -21,7 +22,7 @@ interface CustomCheckBoxProps {
 }
 
 type PaymentScreenRouteProp = RouteProp<RootStackParamList, "Payment">;
-
+type PaymentScreenNavigationProp = StackNavigationProp<RootStackParamList, "Payment">;
 const CustomCheckBox: React.FC<CustomCheckBoxProps> = ({ value, onValueChange }) => {
   return (
     <TouchableOpacity 
@@ -39,7 +40,7 @@ const PaymentScreen: React.FC = () => {
   const navigation = useNavigation();
 
   // ...
-  const route = useRoute<PaymentScreenRouteProp>();
+  const route = useRoute<PaymentScreenRouteProp>(); 
   const { foodItems, totalPrice } = route.params || { foodItems: [], totalPrice: 0 };
   
   // State for form inputs
@@ -83,7 +84,7 @@ const PaymentScreen: React.FC = () => {
     }
   
     setError({});
-    console.log('Payment initiated', { formData });
+    navigation.navigate("ProcessingOrder" as never)
   };
   
 
