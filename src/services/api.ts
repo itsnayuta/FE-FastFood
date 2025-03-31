@@ -3,7 +3,7 @@
 
 
 
-const API_BASE_URL = `http://192.168.1.17:8080/api`;
+const API_BASE_URL = `http://172.11.52.80:8080/api`;
 
 export const getCategories = async () => {
     try {
