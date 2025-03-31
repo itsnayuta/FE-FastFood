@@ -38,6 +38,7 @@ To launch the application on an Android device or emulator, run:
 yarn android
 ```
 > Ensure that you have an Android emulator running or a real device connected.
+if you run with real devices: use this cmd to run faster
 > if you run with real devices: use this cmd to run faster
 ```bash
 yarn android --active-arch-only
