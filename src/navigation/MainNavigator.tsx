@@ -1,6 +1,10 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { createStackNavigator } from "@react-navigation/stack"; // 🔹 Thêm Stack Navigator
+import { createStackNavigator } from "@react-navigation/stack";
+import { CommonActions } from "@react-navigation/native";
+import { NavigationContainer } from '@react-navigation/native';
+
+
 import Header from "../components/Header";
 import HomeScreen from "../screens/HomeScreen";
 import BottomTab from "../components/BottomTab";
@@ -8,7 +12,7 @@ import PromoScreen from "../screens/Promo";
 import MenuScreen from "../screens/MenuScreen";
 import CartScreen from "../screens/CartScreen";
 import OptionsScreen from "../screens/OptionsScreen";
-import ProductDetailsScreen from "../screens/ProductDetailsScreen"; 
+import ProductDetailsScreen from "../screens/ProductDetailsScreen";
 import ComboDetails from "../screens/ComboDetailsScreen";
 
 
@@ -25,6 +29,10 @@ const MenuStackNavigator = () => {
         </Stack.Navigator>
     );
 };
+import PaymentScreen from "../screens/PaymentScreen";
+import ProcessingOrderScreen from "../screens/ProcessingOrderScreen"
+import OrderSuccessScreen from "../screens/OrderSuccessScreen"
+
 
 const MainNavigator = () => {
     return (
@@ -34,11 +42,48 @@ const MainNavigator = () => {
                 <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
                 <Tab.Screen name="Menu" component={MenuStackNavigator} options={{ headerShown: false }} />
                 <Tab.Screen name="Promo" component={PromoScreen} options={{ headerShown: false }} />
-                <Tab.Screen name="Cart" component={CartScreen} options={{ headerShown: false }} />
-                <Tab.Screen name="Options" component={OptionsScreen} options={{ headerShown: false }} />
+                <Tab.Screen
+                    name="Cart"
+                    component={CartStack}
+                    options={{ headerShown: false }}
+                    listeners={({ navigation }) => ({
+                        tabPress: (e) => {
+                            e.preventDefault(); // Ngăn chặn hành vi mặc định
+                            navigation.dispatch(
+                                CommonActions.reset({
+                                    index: 0,
+                                    routes: [
+                                        {
+                                            name: 'Cart',
+                                            state: {
+                                                routes: [{ name: 'CartMain' }]
+                                            }
+                                        }
+                                    ]
+                                })
+                            );
+                        },
+                    })}
+                />
+                <Tab.Screen
+                    name="Options"
+                    component={OptionsScreen}
+                    options={{ headerShown: false }}
+                />
             </Tab.Navigator>
         </>
     );
 };
 
+// Điều hướng giữa CartScreen và PaymentScreen
+const CartStack = () => {
+    return (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="CartMain" component={CartScreen} />
+            <Stack.Screen name="Payment" component={PaymentScreen} />
+            <Stack.Screen name="ProcessingOrder" component={ProcessingOrderScreen} />
+            <Stack.Screen name="OrderSuccess" component={OrderSuccessScreen} />
+        </Stack.Navigator>
+    )
+};
 export default MainNavigator;

@@ -10,6 +10,7 @@ const App: React.FC = () => {
         <NavigationContainer>
             <MainNavigator />
         </NavigationContainer>
+        
     );
 
 }

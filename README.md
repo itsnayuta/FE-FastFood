@@ -1,6 +1,6 @@
 
 # FE-FastFood
-
+## Read to instal app to local
 ## Prerequisites
 Before running the application, ensure you have the following installed:
 
@@ -39,6 +39,7 @@ yarn android
 ```
 > Ensure that you have an Android emulator running or a real device connected.
 if you run with real devices: use this cmd to run faster
+> if you run with real devices: use this cmd to run faster
 ```bash
 yarn android --active-arch-only
 ```

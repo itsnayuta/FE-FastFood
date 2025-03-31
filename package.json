@@ -10,6 +10,8 @@
     "test": "jest"
   },
   "dependencies": {
+    "@expo/vector-icons": "^14.0.4",
+    "@react-native-community/checkbox": "^0.5.17",
     "@react-navigation/bottom-tabs": "^7.3.2",
     "@react-navigation/material-top-tabs": "^7.2.3",
     "@react-navigation/native": "^7.0.19",
@@ -18,9 +20,15 @@
     "axios": "^1.8.4",
     "react": "19.0.0",
     "react-native": "0.78.1",
+<<<<<<< HEAD
     "react-native-dotenv": "^3.4.11",
     "react-native-gesture-handler": "^2.24.0",
     "react-native-pager-view": "^6.7.0",
+=======
+    "react-native-animatable": "^1.4.0",
+    "react-native-gesture-handler": "^2.24.0",
+    "react-native-paper": "^5.13.1",
+>>>>>>> 0959c95fb9ea59d2ce55203b32cfc127774e379c
     "react-native-reanimated": "^3.17.1",
     "react-native-safe-area-context": "^5.3.0",
     "react-native-screens": "^4.9.2",
@@ -37,7 +45,7 @@
     "@react-native/babel-preset": "0.78.1",
     "@react-native/eslint-config": "0.78.1",
     "@react-native/metro-config": "0.78.1",
-    "@react-native/typescript-config": "0.78.1",
+    "@react-native/typescript-config": "^0.78.1",
     "@types/jest": "^29.5.13",
     "@types/react": "^19.0.0",
     "@types/react-test-renderer": "^19.0.0",
