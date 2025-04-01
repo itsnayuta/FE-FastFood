@@ -1,22 +1,19 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import CustomInput from './CustomInput';
 import CustomButton from './CustomButton';
 import SocialButton from './SocialButton';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { ParamListBase } from '@react-navigation/native';
 
-type SignupScreenProps = {
+type ProfileScreenProps = {
   navigation: StackNavigationProp<ParamListBase>;
 };
 
-const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
+const UpdateProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Create an account,</Text>
-        <Text style={styles.subtitle}>Please type full information bellow and we can create your account</Text>
-      </View>
+      <Text style={styles.title}>Update Profile</Text>
       
       <View style={styles.form}>
         <CustomInput
@@ -44,13 +41,13 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
         />
         
         <Text style={styles.termsText}>
-          By signing up you agree to our{' '}
-          <Text style={styles.termsLink}>Term of use and privacy notice</Text>
+          By updating your profile, you agree to our{' '}
+          <Text style={styles.termsLink}>Terms of use and privacy notice</Text>
         </Text>
         
         <CustomButton
-          title="Join Now"
-          onPress={() => {}}
+          title="Save Changes"
+          onPress={() => navigation.goBack()}
           primary
         />
         
@@ -61,21 +58,15 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
         </View>
         
         <SocialButton
-          title="Join with Google"
+          title="Update with Google"
           icon="google"
           onPress={() => {}}
         />
-        
-        <View style={styles.bottomTextContainer}>
-          <Text style={styles.bottomText}>Already have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
-            <Text style={styles.signInText}>Sign In</Text>
-          </TouchableOpacity>
-        </View>
       </View>
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -83,24 +74,37 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   header: {
+    alignItems: 'center',
     marginBottom: 24,
+  },
+  profileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 16,
+  },
+  userName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  userEmail: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 16,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#666',
+    marginBottom: 16,
   },
   form: {
     flex: 1,
   },
   termsText: {
+    fontSize: 14,
     color: '#666',
-    fontSize: 12,
-    marginVertical: 16,
+    textAlign: 'center',
+    marginVertical: 10,
   },
   termsLink: {
     color: '#a51c30',
@@ -120,18 +124,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     color: '#666',
   },
-  bottomTextContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 20,
-  },
-  bottomText: {
-    color: '#666',
-  },
-  signInText: {
-    color: '#a51c30',
-    fontWeight: 'bold',
-  },
 });
 
-export default SignupScreen;
+export default UpdateProfileScreen;

@@ -1,16 +1,17 @@
+import { useNavigation } from "@react-navigation/native";
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
-
+import { View, StyleSheet, TouchableOpacity, Image } from "react-native";
 
 
 const Header = () => {
+    const navigation = useNavigation();
     return (
         <View style={styles.container}>
             {/* Logo KFC bên trái */}
             <Image source={require("../assets/kfc_logo.png")} style={styles.logo} resizeMode="contain" />
 
             {/* Icon tài khoản bên phải */}
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate("ProfileScreen")}>
                 <Image source={require("../assets/avatar_icon.png")} style={styles.avatar} />
             </TouchableOpacity>
         </View>
@@ -39,4 +40,3 @@ const styles = StyleSheet.create({
 });
 
 export default Header;
-
