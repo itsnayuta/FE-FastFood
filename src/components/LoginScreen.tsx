@@ -3,12 +3,14 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import CustomInput from './CustomInput';
 import CustomButton from './CustomButton';
 import SocialButton from './SocialButton';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { ParamListBase } from '@react-navigation/native';
 
-interface LoginScreenProps {
-  navigateTo: (screen: 'login' | 'onboarding' | 'signup') => void;
-}
+type LoginScreenProps = {
+  navigation: StackNavigationProp<ParamListBase>;
+};
 
-const LoginScreen: React.FC<LoginScreenProps> = ({ navigateTo }) => {
+const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -53,7 +55,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigateTo }) => {
         
         <View style={styles.bottomTextContainer}>
           <Text style={styles.bottomText}>Don't have an account? </Text>
-          <TouchableOpacity onPress={() => navigateTo('signup')}>
+          <TouchableOpacity onPress={() => navigation.navigate('SignupScreen')}>
             <Text style={styles.joinNowText}>Join Now</Text>
           </TouchableOpacity>
         </View>
@@ -67,8 +69,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 24,
     backgroundColor: 'white',
-    borderRadius: 30,
-    margin: 10,
   },
   header: {
     marginBottom: 24,
