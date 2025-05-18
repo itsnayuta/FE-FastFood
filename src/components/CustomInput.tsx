@@ -1,4 +1,3 @@
-// components/CustomInput.tsx
 import React, { useState } from 'react';
 import { StyleSheet, View, TextInput, TouchableOpacity, Text, KeyboardTypeOptions } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -9,6 +8,8 @@ interface CustomInputProps {
   secureTextEntry?: boolean;
   keyboardType?: KeyboardTypeOptions;
   countryCode?: string;
+  value: string;  
+  onChangeText: (text: string) => void; 
 }
 
 const CustomInput: React.FC<CustomInputProps> = ({
@@ -17,6 +18,8 @@ const CustomInput: React.FC<CustomInputProps> = ({
   secureTextEntry = false,
   keyboardType = 'default',
   countryCode,
+  value,
+  onChangeText,
 }) => {
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false);
@@ -40,6 +43,8 @@ const CustomInput: React.FC<CustomInputProps> = ({
         placeholderTextColor="#999"
         secureTextEntry={secureTextEntry && !isPasswordVisible}
         keyboardType={keyboardType}
+        value={value}  
+        onChangeText={onChangeText}  
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
       />
