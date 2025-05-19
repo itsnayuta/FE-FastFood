@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Alert } from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {StyleSheet, View, Text, TouchableOpacity, Alert} from 'react-native';
 import CustomInput from './CustomInput';
 import CustomButton from './CustomButton';
 import SocialButton from './SocialButton';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { ParamListBase } from '@react-navigation/native';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {ParamListBase} from '@react-navigation/native';
+import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import auth from '@react-native-firebase/auth';
-import Config from "react-native-config";
+import Config from 'react-native-config';
+import axios from 'axios';
 
 type LoginScreenProps = {
   navigation: StackNavigationProp<ParamListBase>;
@@ -16,7 +17,7 @@ type LoginScreenProps = {
 const isValidEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
 const isValidPassword = (password: string) => password.length >= 6;
 
-const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -24,8 +25,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // Initialize Google Sign-In
     GoogleSignin.configure({
-        webClientId: Config.WEB_CLIENT_ID, 
+      webClientId: Config.WEB_CLIENT_ID,
+      offlineAccess: true, // Add this to get refresh token
     });
   }, []);
 
@@ -45,18 +48,57 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     }
 
     if (isValid) {
-      setLoading(true);
-      try {
-        const userCredential = await auth().signInWithEmailAndPassword(email, password);
-        const idToken = await userCredential.user.getIdToken();
-
-        console.log('Email Login -> Firebase ID Token:', idToken);
-        await sendIdTokenToBackend(idToken);
-
-        Alert.alert('Success', 'Logged in successfully!');
+      setLoading(true);      try {
+        // Try to sign in first
+        try {
+          // Using the newer createUserWithEmailAndPassword method directly
+          const userCredential = await auth().createUserWithEmailAndPassword(
+            email,
+            password
+          );
+          const idToken = await userCredential.user.getIdToken();
+          console.log('[Login] User created and signed in');
+          await sendIdTokenToBackend(idToken);
+          Alert.alert('Success', 'Logged in successfully!');
+        } catch (signInError: any) {          // If account already exists, try to update profile
+          if (signInError.code === 'auth/email-already-in-use') {
+            console.log('[Login] Account exists, attempting to update profile');
+            // You might want to handle existing users differently
+            Alert.alert('Account Exists', 'This email is already registered.');
+          } else {
+            // For any other error, throw it
+            throw signInError;
+          }
+        }
       } catch (error: any) {
-        console.error('[EmailLogin Error]', error);
-        Alert.alert('Error', error.message);
+        console.error('[Auth Error]', error);
+        let errorMessage = 'An error occurred during authentication';
+        
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            errorMessage = 'This email is already registered. Please try logging in.';
+            break;
+          case 'auth/invalid-email':
+            errorMessage = 'The email address is invalid.';
+            break;
+          case 'auth/operation-not-allowed':
+            errorMessage = 'Email/password accounts are not enabled. Please contact support.';
+            break;
+          case 'auth/weak-password':
+            errorMessage = 'The password is too weak. Please use a stronger password.';
+            break;
+          case 'auth/invalid-credential':
+            errorMessage = 'Invalid email or password. Please try again.';
+            break;
+          case 'auth/invalid-login-credentials':
+            errorMessage = 'Invalid email or password. Please try again.';
+            break;
+          case 'auth/too-many-requests':
+            errorMessage = 'Too many failed attempts. Please try again later.';
+            break;
+        }
+        
+        Alert.alert('Error', errorMessage);
       } finally {
         setLoading(false);
       }
@@ -66,32 +108,49 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
+
+      // First, sign out to ensure a fresh sign-in
+      await GoogleSignin.signOut();
+
       console.log('[GoogleSignIn] Checking Play Services...');
       await GoogleSignin.hasPlayServices();
 
       console.log('[GoogleSignIn] Initiating sign-in...');
-      const userInfo = await GoogleSignin.signIn();
+      const response = await GoogleSignin.signIn();
+      const idToken = response?.data?.idToken || '';
+      Alert.alert('Google Sign-In', idToken);
+      if (!idToken) {
+        throw new Error('Failed to get ID token from Google Sign In');
+      }
 
-      console.log('[GoogleSignIn] User Info:', userInfo);
+      console.log('[GoogleSignIn] Got idToken:', idToken.substring(0, 20) + '...');
 
-      const idToken = userInfo?.data?.idToken;
-      // const googleCredential = auth.GoogleAuthProvider.credential(idToken || "");
+      // Create Firebase credential with the Google ID token
+      const googleCredential = auth.GoogleAuthProvider.credential(idToken);
 
-      // const userCredential = await auth().signInWithCredential(googleCredential);
-      // const firebaseIdToken = await userCredential.user.getIdToken();
+      // Sign in to Firebase with the Google credential
+      console.log('[Firebase] Signing in with credential...');
+      const userCredential = await auth().signInWithCredential(googleCredential);
 
-      // console.log('[GoogleSignIn] Firebase ID Token:', firebaseIdToken);
-      // await sendIdTokenToBackend(firebaseIdToken);
-      await sendIdTokenToBackend(idToken || '');
+      // Get fresh Firebase ID token
+      console.log('[Firebase] Getting fresh ID token...');
+      const firebaseIdToken = await userCredential.user.getIdToken(true); // Force refresh
 
+      console.log('[Firebase] Got fresh ID token:', firebaseIdToken.substring(0, 20) + '...');
+
+      // Send the Firebase token to backend
+      await sendIdTokenToBackend(firebaseIdToken);
 
       Alert.alert('Success', 'Logged in with Google successfully!');
     } catch (error: any) {
       console.error('[GoogleSignIn Error]', error);
       if (error.code === 'auth/account-exists-with-different-credential') {
-        Alert.alert('Account Exists', 'Try logging in with a different method.');
+        Alert.alert(
+          'Account Exists',
+          'Try logging in with a different method.',
+        );
       } else {
-        Alert.alert('Google Sign-In Error', error.message);
+        Alert.alert('Google Sign-In Error', `${error.code || ''}: ${error.message}`);
       }
     } finally {
       setLoading(false);
@@ -99,22 +158,74 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   };
 
   const sendIdTokenToBackend = async (idToken: string) => {
+    const apiUrl = `${Config.API_BASE_URL}/api/auth/login`;
     try {
-      const response = await fetch(`${Config.API_BASE_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ idToken }),
-      });
+      console.log('[Backend Request] URL:', apiUrl);
+      // Log token length and first/last few characters for debugging
+      console.log('[Backend Request] Token length:', idToken.length);
+      console.log('[Backend Request] Token start:', idToken.substring(0, 10));
+      console.log('[Backend Request] Token end:', idToken.substring(idToken.length - 10));
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to authenticate with backend');
+      const response = await axios.post(
+        apiUrl,
+        {idToken},
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            // Authorization: `Bearer ${idToken}`, // Add token in Authorization header as well
+          },
+          timeout: 10000,
+        },
+      );
+
+      console.log('[Backend Response] Status:', response.status);
+      console.log('[Backend Response] Data:', response.data);
+
+      if (response.data.token) {
+        console.log('[Auth] Received backend token');
       }
+
+      return response.data;
     } catch (err: any) {
-      console.error('Failed to send ID token to backend:', err);
-      Alert.alert('Backend Error', err.message);
+      if (axios.isAxiosError(err)) {
+        console.error('[Backend Error] Status:', err.response?.status);
+        console.error('[Backend Error] Data:', JSON.stringify(err.response?.data, null, 2));
+        console.error('[Backend Error] Message:', err.message);
+
+        // More specific error handling for 401
+        if (err.response?.status === 401) {
+          console.error('[Auth Error] Invalid token. Token details:');
+          console.error('Token length:', idToken.length);
+          console.error('Token format:', idToken.split('.').length === 3 ? 'Valid JWT format' : 'Invalid JWT format');
+          Alert.alert(
+            'Authentication Error',
+            'Invalid authentication token. Please try signing in again.',
+          );
+        } else if (err.code === 'ECONNABORTED') {
+          Alert.alert(
+            'Connection Timeout',
+            'The server is taking too long to respond. Please check your internet connection and try again.',
+          );
+        } else if (err.response) {
+          Alert.alert(
+            'Backend Error',
+            `Server Error (${err.response.status}): ${
+              err.response.data.message || 'Unknown error'
+            }`,
+          );
+        } else if (err.request) {
+          Alert.alert(
+            'Network Error',
+            'Could not connect to the server. Please check your internet connection and make sure the backend server is running.',
+          );
+        } else {
+          Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+        }
+      } else {
+        console.error('[Backend Error] Unknown:', err);
+        Alert.alert('Unexpected Error', 'Something went wrong. Please try again.');
+      }
+      throw err;
     }
   };
 
@@ -122,7 +233,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Welcome back,</Text>
-        <Text style={styles.subtitle}>Glad to meet you again! Please login to use the app.</Text>
+        <Text style={styles.subtitle}>
+          Glad to meet you again! Please login to use the app.
+        </Text>
       </View>
 
       <View style={styles.form}>
@@ -142,7 +255,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           value={password}
           onChangeText={setPassword}
         />
-        {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+        {passwordError ? (
+          <Text style={styles.errorText}>{passwordError}</Text>
+        ) : null}
 
         <TouchableOpacity style={styles.forgotPassword}>
           <Text style={styles.forgotPasswordText}>Forgot password?</Text>
