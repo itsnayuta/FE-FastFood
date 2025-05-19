@@ -82,11 +82,15 @@ const MenuTabNavigator = () => {
         >
             {tabs.map((tab, index) => (
                 <Tab.Screen
-                    key={index}
-                    name={tab.name}
-                    component={tab.type === "combo" ? ComboList : CategoryList}
-                    initialParams={{ items: tab.data, type: tab.type, name: tab.name }}
-                />
+                key={index}
+                name={tab.name}
+                component={tab.type === "combo" ? ComboList : CategoryList}
+                initialParams={
+                    tab.type === "combo"
+                        ? { items: tab.data, type: tab.type, name: tab.name }
+                        : { id: tab.data[0]?.id } // ✅ Truyền đúng categoryId cho CategoryList
+                }
+            />
             ))}
         </Tab.Navigator>
     );
