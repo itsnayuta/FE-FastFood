@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, Image, ActivityIndicator, StyleSheet, TouchableOpacity } from "react-native";
 import { getCombos } from "../services/api"; // API lấy danh sách combo
-import { Combo } from "../types";
+import { Combo } from "../types/index"; // Định nghĩa kiểu Combo    
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 
@@ -59,7 +59,7 @@ const ComboList: React.FC<ComboListProps> = ({ route }) => {
                         >
                             <View style={styles.comboCard}>
                                 {/* Ảnh combo bên trái */}
-                                <Image source={require("../assets/food_image/food_image.png")} style={styles.comboImage} />
+                                <Image source={{ uri: item.imageUrl }} style={styles.comboImage} />
 
                                 {/* Thông tin combo bên phải */}
                                 <View style={styles.comboInfo}>

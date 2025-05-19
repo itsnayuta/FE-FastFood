@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, Image, ActivityIndicator, StyleSheet, TouchableOpacity } from "react-native";
 import { getProductsByCategoryId } from "../services/api";
-import { Product } from "../types";
+import { Combo } from "../types/index";
+import { Product } from "../types/index";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 
@@ -57,7 +58,7 @@ const CategoryList: React.FC<CategoryListProps> = ({ route }) => {
                         >
                             <View style={styles.productCard} >
                                 {/* Ảnh sản phẩm bên trái */}
-                                <Image source={require("../assets/food_image/food_image.png")} style={styles.productImage} />
+                                <Image source={{ uri: item.imageUrl }} style={styles.productImage} />
 
                                 {/* Thông tin sản phẩm bên phải */}
                                 <View style={styles.productInfo}>

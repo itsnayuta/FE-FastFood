@@ -17,7 +17,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ route }) => {
     return (
         <View style={styles.container}>
             {/* Ảnh sản phẩm */}
-            <Image source={require("../assets/food_image/food_image.png")} style={styles.productImage} />
+         
+            <Image source={{ uri: product.imageUrl }} style={styles.productImage} />
 
             {/* Thông tin sản phẩm */}
             <Text style={styles.productName}>{product.name}</Text>
