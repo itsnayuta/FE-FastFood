@@ -12,7 +12,7 @@ import {
     TextInput
 } from "react-native";
 import { NavigationProp } from '@react-navigation/native';
-import { RootStackParamList, FoodItem } from '../navigation';
+import { RootStackParamList, FoodItem } from '../types';
 const {width} = Dimensions.get('window');
 
 interface RenderItemProps {
