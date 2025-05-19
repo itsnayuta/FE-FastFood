@@ -9,6 +9,8 @@ import auth from '@react-native-firebase/auth';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import Config from 'react-native-config';
 import axios from 'axios';
+import { authStorage } from '../utils/authStorage';
+import api from '../utils/api';
 
 type SignupScreenProps = {
   navigation: StackNavigationProp<ParamListBase>;
@@ -42,24 +44,25 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const sendIdTokenToBackend = async (idToken: string) => {
+  const sendIdTokenToBackend = async (idToken: string, name?: string, phoneNumber?: string, password?: string) => {
     const apiUrl = `${Config.API_BASE_URL}/api/auth/login`;
     try {
       const response = await axios.post(
         apiUrl,
-        {idToken},
+        {idToken, name, phoneNumber, password},
         {
           headers: {
             'Content-Type': 'application/json',
           },
           timeout: 10000,
         },
+      );      console.log('[Auth] Received response:', response.data);
+      await authStorage.storeTokens(
+        response.data.accessToken,
+        response.data.refreshToken,
+        response.data.user
       );
-
-      if (response.data.token) {
-        console.log('[Auth] Received backend token');
-        return response.data;
-      }
+      return response.data;
     } catch (err: any) {
       if (axios.isAxiosError(err)) {
         Alert.alert(
@@ -91,7 +94,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
         const idToken = await userCredential.user.getIdToken();
 
         // Send to backend
-        await sendIdTokenToBackend(idToken);
+        await sendIdTokenToBackend(idToken, name, mobile, password);
 
         Alert.alert('Success', 'Account created successfully!');
         navigation.navigate('Home'); // Navigate to home screen after successful signup

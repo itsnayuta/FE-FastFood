@@ -9,6 +9,7 @@ import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import auth from '@react-native-firebase/auth';
 import Config from 'react-native-config';
 import axios from 'axios';
+import { authStorage } from '../utils/authStorage';
 
 type LoginScreenProps = {
   navigation: StackNavigationProp<ParamListBase>;
@@ -71,7 +72,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
                 auth.EmailAuthProvider.credential(email, password)
               );
               const idToken = await existingUser.user.getIdToken();
-              await sendIdTokenToBackend(idToken);
+              await sendIdTokenToBackend(idToken, password);
               Alert.alert('Success', 'Logged in successfully!');
               navigation.navigate('Home'); // Navigate to home screen
               return;
@@ -130,7 +131,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
     }
   };
 
-  const sendIdTokenToBackend = async (idToken: string) => {
+  const sendIdTokenToBackend = async (idToken: string, password?: string) => {
     const apiUrl = `${Config.API_BASE_URL}/api/auth/login`;
     try {
       console.log('[Backend Request] URL:', apiUrl);
@@ -141,7 +142,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
 
       const response = await axios.post(
         apiUrl,
-        {idToken},
+        {idToken, password},
         {
           headers: {
             'Content-Type': 'application/json',
@@ -157,6 +158,11 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
       if (response.data.token) {
         console.log('[Auth] Received backend token');
       }
+      await authStorage.storeTokens(
+              response.data.accessToken,
+              response.data.refreshToken,
+              response.data.user
+            );
 
       return response.data;
     } catch (err: any) {
