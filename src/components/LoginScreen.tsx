@@ -28,7 +28,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
     // Initialize Google Sign-In
     GoogleSignin.configure({
       webClientId: Config.WEB_CLIENT_ID,
-      offlineAccess: true, // Add this to get refresh token
+      offlineAccess: true,
     });
   }, []);
 
@@ -48,35 +48,36 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
     }
 
     if (isValid) {
-      setLoading(true);      try {
-        // Try to sign in first
-        try {
-          // Using the newer createUserWithEmailAndPassword method directly
-          const userCredential = await auth().createUserWithEmailAndPassword(
-            email,
-            password
-          );
-          const idToken = await userCredential.user.getIdToken();
-          console.log('[Login] User created and signed in');
-          await sendIdTokenToBackend(idToken);
-          Alert.alert('Success', 'Logged in successfully!');
-        } catch (signInError: any) {          // If account already exists, try to update profile
-          if (signInError.code === 'auth/email-already-in-use') {
-            console.log('[Login] Account exists, attempting to update profile');
-            // You might want to handle existing users differently
-            Alert.alert('Account Exists', 'This email is already registered.');
-          } else {
-            // For any other error, throw it
-            throw signInError;
-          }
-        }
+      setLoading(true);
+      try {
+        // Create a new account or sign in existing user
+        const userCredential = await auth().createUserWithEmailAndPassword(email, password);
+        const idToken = await userCredential.user.getIdToken();
+        
+        console.log('[Auth] User authenticated');
+        await sendIdTokenToBackend(idToken);
+        
+        Alert.alert('Success', 'Logged in successfully!');
+        navigation.navigate('Home'); // Navigate to home screen
       } catch (error: any) {
         console.error('[Auth Error]', error);
-        let errorMessage = 'An error occurred during authentication';
+        let errorMessage = 'Authentication failed';
         
         switch (error.code) {
           case 'auth/email-already-in-use':
-            errorMessage = 'This email is already registered. Please try logging in.';
+            // If account exists, try to sign in instead
+            try {
+              const existingUser = await auth().signInWithCredential(
+                auth.EmailAuthProvider.credential(email, password)
+              );
+              const idToken = await existingUser.user.getIdToken();
+              await sendIdTokenToBackend(idToken);
+              Alert.alert('Success', 'Logged in successfully!');
+              navigation.navigate('Home'); // Navigate to home screen
+              return;
+            } catch (signInError: any) {
+              errorMessage = 'Invalid email or password';
+            }
             break;
           case 'auth/invalid-email':
             errorMessage = 'The email address is invalid.';
@@ -87,17 +88,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
           case 'auth/weak-password':
             errorMessage = 'The password is too weak. Please use a stronger password.';
             break;
-          case 'auth/invalid-credential':
-            errorMessage = 'Invalid email or password. Please try again.';
-            break;
-          case 'auth/invalid-login-credentials':
-            errorMessage = 'Invalid email or password. Please try again.';
-            break;
-          case 'auth/too-many-requests':
-            errorMessage = 'Too many failed attempts. Please try again later.';
-            break;
+          default:
+            errorMessage = error.message;
         }
-        
         Alert.alert('Error', errorMessage);
       } finally {
         setLoading(false);
@@ -108,50 +101,30 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
-
-      // First, sign out to ensure a fresh sign-in
-      await GoogleSignin.signOut();
-
+      await GoogleSignin.signOut(); // Clear any existing session
+      
       console.log('[GoogleSignIn] Checking Play Services...');
-      await GoogleSignin.hasPlayServices();
-
-      console.log('[GoogleSignIn] Initiating sign-in...');
+      await GoogleSignin.hasPlayServices();      console.log('[GoogleSignIn] Initiating sign-in...');
       const response = await GoogleSignin.signIn();
-      const idToken = response?.data?.idToken || '';
-      Alert.alert('Google Sign-In', idToken);
+      const idToken = response?.data?.idToken;
       if (!idToken) {
         throw new Error('Failed to get ID token from Google Sign In');
       }
 
-      console.log('[GoogleSignIn] Got idToken:', idToken.substring(0, 20) + '...');
-
-      // Create Firebase credential with the Google ID token
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-
-      // Sign in to Firebase with the Google credential
-      console.log('[Firebase] Signing in with credential...');
       const userCredential = await auth().signInWithCredential(googleCredential);
+      const firebaseIdToken = await userCredential.user.getIdToken(true);
 
-      // Get fresh Firebase ID token
-      console.log('[Firebase] Getting fresh ID token...');
-      const firebaseIdToken = await userCredential.user.getIdToken(true); // Force refresh
-
-      console.log('[Firebase] Got fresh ID token:', firebaseIdToken.substring(0, 20) + '...');
-
-      // Send the Firebase token to backend
       await sendIdTokenToBackend(firebaseIdToken);
-
+      
       Alert.alert('Success', 'Logged in with Google successfully!');
+      navigation.navigate('Home'); // Navigate to home screen
     } catch (error: any) {
       console.error('[GoogleSignIn Error]', error);
-      if (error.code === 'auth/account-exists-with-different-credential') {
-        Alert.alert(
-          'Account Exists',
-          'Try logging in with a different method.',
-        );
-      } else {
-        Alert.alert('Google Sign-In Error', `${error.code || ''}: ${error.message}`);
-      }
+      Alert.alert(
+        'Sign In Error',
+        error.message || 'Failed to sign in with Google'
+      );
     } finally {
       setLoading(false);
     }
