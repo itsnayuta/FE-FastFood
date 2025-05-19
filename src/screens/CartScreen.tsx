@@ -55,9 +55,6 @@ const CartScreen = () => {
                 <View style={{ flex: 1, gap: 30 }}>
                     <Text style={{ fontWeight: '900', marginTop: 10, fontSize: 18 }}>{item.name}</Text>
                     <View style={{ flexDirection: 'row', gap: 20 }}>
-                        <TouchableOpacity onPress={() => Alert.alert("Chỉnh sửa")}>
-                            <Text style={style.link}>Chỉnh sửa</Text>
-                        </TouchableOpacity>
                         <TouchableOpacity onPress={() => handleDelete(item.id)}>
                             <Text style={style.link}>Xóa</Text>
                         </TouchableOpacity>
