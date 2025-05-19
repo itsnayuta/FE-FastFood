@@ -6,15 +6,30 @@ interface CustomButtonProps {
   title: string;
   onPress: () => void;
   primary?: boolean;
+  disabled?: boolean;
 }
 
-const CustomButton: React.FC<CustomButtonProps> = ({ title, onPress, primary = false }) => {
+const CustomButton: React.FC<CustomButtonProps> = ({ 
+  title, 
+  onPress, 
+  primary = false,
+  disabled = false
+}) => {
   return (
     <TouchableOpacity
-      style={[styles.container, primary ? styles.primaryContainer : styles.secondaryContainer]}
+      style={[
+        styles.container, 
+        primary ? styles.primaryContainer : styles.secondaryContainer,
+        disabled && styles.disabledContainer
+      ]}
       onPress={onPress}
+      disabled={disabled}
     >
-      <Text style={[styles.text, primary ? styles.primaryText : styles.secondaryText]}>
+      <Text style={[
+        styles.text, 
+        primary ? styles.primaryText : styles.secondaryText,
+        disabled && styles.disabledText
+      ]}>
         {title}
       </Text>
     </TouchableOpacity>
@@ -36,6 +51,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ddd',
   },
+  disabledContainer: {
+    backgroundColor: '#ccc',
+    borderColor: '#ccc',
+  },
   text: {
     fontSize: 16,
     fontWeight: 'bold',
@@ -46,6 +65,9 @@ const styles = StyleSheet.create({
   secondaryText: {
     color: '#333',
   },
+  disabledText: {
+    color: '#888',
+  }
 });
 
 export default CustomButton;
