@@ -13,7 +13,7 @@ import { getProductsByCategoryId } from "../services/api";
 import { Product } from "../types/index";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-
+import { addToCart } from "../utils/cart";
 interface CategoryListProps {
     route: any;
 }
@@ -46,6 +46,7 @@ const CategoryList: React.FC<CategoryListProps> = ({ route }) => {
     }, [categoryId]);
 
     const handleAddToCart = (product: Product) => {
+        addToCart(product);
         console.log("Thêm vào giỏ hàng:", product.name);
     };
 
