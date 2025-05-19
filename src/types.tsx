@@ -1,19 +1,18 @@
+
+import { Product, Combo } from './types/index';
 export type ScreenType = 'login' | 'onboarding' | 'signup';
 
-export interface FoodItem {
-    id: number;
-    name: string;
-    price: number;
-    image: any;
+export type CartItem = (Product | Combo) & {
     quality: number;
-}
+};
+
 
 export type RootStackParamList = {
     Cart: undefined;
     Payment: {
-        foodItems: FoodItem[];
+        foodItems: CartItem[];
         totalPrice: number;
     };
     ProcessingOrder: undefined;
-    OrderSuccess: undefined; 
+    OrderSuccess: undefined;
 };

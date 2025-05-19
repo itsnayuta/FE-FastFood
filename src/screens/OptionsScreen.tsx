@@ -1,5 +1,15 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import React, { useState } from "react";
+import { View, Text, StyleSheet,Image,TouchableOpacity } from "react-native";
+import * as Animatable from 'react-native-animatable';
+import { useNavigation, CommonActions } from "@react-navigation/native"; // Thêm CommonActions
+
+const OptionsScreen = () => {
+
+    const navigation = useNavigation()
+
+    const [menuFood,setismenufoodclicked] = useState(false);
+    const [contactaboutus, setiscontactaboutusclicked] = useState(false)
+
 
 const OptionsScreen = ({ navigation }) => {
     const [menuFood, setismenufoodclicked] = useState(false);
@@ -30,26 +40,63 @@ const OptionsScreen = ({ navigation }) => {
                 </View>
 
                 {menuFood && (
-                    <View style={{flex:0,marginTop:10,gap:10}}>
-                        <TouchableOpacity>
-                            <Text>Ưu Đãi</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                            <Text>Món Mới</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                            <Text>Combo 1 người</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                            <Text>Combo nhóm</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                            <Text>Gà Rán - Gà Quay</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                            <Text>Thức Ăn Nhẹ</Text>
-                        </TouchableOpacity>
-                    </View>
+
+                    
+                        <View style={{flex:0,marginTop:10,gap:10}}>
+                            <TouchableOpacity onPress={() => {
+                                    navigation.dispatch(
+                                      CommonActions.reset({
+                                        index: 0,
+                                        routes: [
+                                          {
+                                            name: "Menu",
+                                            state: {
+                                              routes: [
+                                                {
+                                                  name: "MenuMain",
+                                                  params: { initialTab: "Combo nhóm 1" },
+                                                },
+                                              ],
+                                            },
+                                          },
+                                        ],
+                                      })
+                                    );
+                                  }}>
+                                <Text>Combo 1 người</Text>
+                            </TouchableOpacity>
+                        
+                            <TouchableOpacity>
+                                <Text>Combo nhóm</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity>
+                                <Text>Gà Rán - Gà Quay</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity  onPress={() => {
+                                    navigation.dispatch(
+                                      CommonActions.reset({
+                                        index: 0,
+                                        routes: [
+                                          {
+                                            name: "Menu",
+                                            state: {
+                                              routes: [
+                                                {
+                                                  name: "MenuMain",
+                                                  params: { initialTab: "Thức ăn nhẹ" },
+                                                },
+                                              ],
+                                            },
+                                          },
+                                        ],
+                                      })
+                                    );
+                                  }}>
+                                <Text>Thức Ăn Nhẹ</Text>
+                            </TouchableOpacity>
+
+                        </View>
+                
                 )}
             </View>
 

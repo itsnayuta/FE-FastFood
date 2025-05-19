@@ -10,7 +10,9 @@ import {
     Alert,
 } from "react-native";
 import { getProductInComboByComboId, getProductById } from "../services/api";
-import { Product, ProductInCombo } from "../types";
+import { Product } from "../types/index"
+import { ProductInCombo } from "../types/index"
+import { Combo } from "../types/index"
 
 interface ComboDetailsProps {
     route: any;
@@ -28,6 +30,7 @@ const ComboDetails: React.FC<ComboDetailsProps> = ({ route }) => {
                 const productDetails = await Promise.all(
                     productInCombos.map(async (item) => {
                         const product = await getProductById(item.id);
+                        console.log("Fetched product for id", item.productId, product);
                         return { ...product, quantity: item.quantity };
                     })
                 );
@@ -62,7 +65,7 @@ const ComboDetails: React.FC<ComboDetailsProps> = ({ route }) => {
                     keyExtractor={(item) => item.id.toString()}
                     renderItem={({ item }) => (
                         <View style={styles.productCard}>
-                            <Image source={require("../assets/food_image/food_image.png")} style={styles.productImage} />
+                            <Image source={{ uri: item.imageUrl }} style={styles.productImage} />
                             <View style={styles.productInfo}>
                                 <Text style={styles.productName}>{item.name}</Text>
                                 <Text style={styles.productPrice}>{item.price}₫</Text>
