@@ -1,7 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, Image, ActivityIndicator, StyleSheet, TouchableOpacity } from "react-native";
-import { getCombos } from "../services/api"; // API lấy danh sách combo
-import { Combo } from "../types/index"; // Định nghĩa kiểu Combo    
+import {
+    View,
+    Text,
+    FlatList,
+    Image,
+    ActivityIndicator,
+    StyleSheet,
+    TouchableOpacity,
+    TextInput
+} from "react-native";
+import { getCombos } from "../services/api";
+import { Combo } from "../types/index";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 
@@ -15,17 +24,17 @@ type ComboListNavigationProp = StackNavigationProp<
 >;
 
 const ComboList: React.FC<ComboListProps> = ({ route }) => {
-    const { name } = route.params; // Nhận type từ params
+    const { name } = route.params;
     const [combos, setCombos] = useState<Combo[]>([]);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState("");
     const navigation = useNavigation<ComboListNavigationProp>();
 
     useEffect(() => {
         const fetchCombos = async () => {
             try {
-                const data = await getCombos(); // Lấy toàn bộ combo
-                const filteredCombos = data.filter((combo: Combo) => combo.type === name); // Lọc theo type
-                console.log("filter combos: ", filteredCombos);
+                const data = await getCombos();
+                const filteredCombos = data.filter((combo: Combo) => combo.type === name);
                 setCombos(filteredCombos);
             } catch (error) {
                 console.error("Lỗi khi tải combo:", error);
@@ -41,27 +50,36 @@ const ComboList: React.FC<ComboListProps> = ({ route }) => {
         console.log("Thêm vào giỏ hàng:", combo.name);
     };
 
+    const filteredCombos = combos.filter((combo) =>
+        combo.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     if (loading) {
         return <ActivityIndicator size="large" color="#e4002b" style={styles.loading} />;
     }
 
     return (
         <View style={styles.container}>
-            {combos.length === 0 ? (
+            <TextInput
+                style={styles.searchInput}
+                placeholder="Tìm combo..."
+                value={searchTerm}
+                onChangeText={(text) => setSearchTerm(text)}
+            />
+
+            {filteredCombos.length === 0 ? (
                 <Text style={styles.noComboText}>Không có combo nào</Text>
             ) : (
                 <FlatList
-                    data={combos}
+                    data={filteredCombos}
                     keyExtractor={(item) => item.id.toString()}
                     renderItem={({ item }) => (
                         <TouchableOpacity
                             onPress={() => navigation.navigate("ComboDetails", { combo: item })}
                         >
                             <View style={styles.comboCard}>
-                                {/* Ảnh combo bên trái */}
                                 <Image source={{ uri: item.imageUrl }} style={styles.comboImage} />
 
-                                {/* Thông tin combo bên phải */}
                                 <View style={styles.comboInfo}>
                                     <Text style={styles.comboName}>{item.name}</Text>
                                     <Text style={styles.comboPrice}>{item.price}₫</Text>
@@ -69,7 +87,6 @@ const ComboList: React.FC<ComboListProps> = ({ route }) => {
                                         {item.description || "Mô tả combo..."}
                                     </Text>
 
-                                    {/* Nút "Thêm" */}
                                     <TouchableOpacity
                                         style={styles.addToCartButton}
                                         onPress={() => handleAddToCart(item)}
@@ -90,6 +107,15 @@ const styles = StyleSheet.create({
     container: { flex: 1, padding: 10, backgroundColor: "#fff" },
     loading: { flex: 1, justifyContent: "center", alignItems: "center" },
     noComboText: { textAlign: "center", fontSize: 18, marginTop: 20 },
+
+    searchInput: {
+        height: 40,
+        borderColor: "#ccc",
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 10,
+        marginBottom: 10
+    },
 
     comboCard: {
         flexDirection: "row",
@@ -132,14 +158,14 @@ const styles = StyleSheet.create({
     },
 
     addToCartButton: {
-        backgroundColor: "#ddd",
+        backgroundColor: "#e4002b", // 🔴 đỏ
         paddingVertical: 6,
         paddingHorizontal: 15,
         borderRadius: 5,
         alignSelf: "flex-end"
     },
     addToCartText: {
-        color: "#000",
+        color: "#fff", // trắng
         fontWeight: "bold",
         fontSize: 14
     },

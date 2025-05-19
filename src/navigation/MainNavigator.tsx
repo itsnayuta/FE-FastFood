@@ -51,7 +51,7 @@ const MainNavigator = () => {
             <Tab.Navigator tabBar={(props) => <BottomTab {...props} />}>
                 <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
                 <Tab.Screen name="Menu" component={MenuStackNavigator} options={{ headerShown: false }} />
-                <Tab.Screen name="Promo" component={PromoScreen} options={{ headerShown: false }} />
+            
                 <Tab.Screen
                     name="Cart"
                     component={CartStack}
