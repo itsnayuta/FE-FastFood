@@ -8,7 +8,7 @@ import CategoryList from '../components/CategoryList';
 const Tab = createMaterialTopTabNavigator();
 
 const MenuTabNavigator = () => {
-    const [tabs, setTabs] = useState<{ id: number; name: string; type: "combo" | "category" }[]>([]);
+    const [tabs, setTabs] = useState<{ name: string, data: any[], type: "combo" | "category" }[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -17,15 +17,25 @@ const MenuTabNavigator = () => {
                 const combos = await getCombos();
                 const categories = await getCategories();
 
-                const comboTabs = combos.map((combo: any) => ({
-                    id: combo.id,
-                    name: combo.type,  // Lưu tên của combo
-                    type: "combo"
-                }));
+                // Nhóm combo theo type
+                const comboTabs = Object.values(
+                    combos.reduce((groups: Record<string, any>, combo: any) => {
+                        if (!groups[combo.type]) {
+                            groups[combo.type] = {
+                                name: combo.type,
+                                data: [],
+                                type: "combo"
+                            };
+                        }
+                        groups[combo.type].data.push(combo);
+                        return groups;
+                    }, {})
+                );
 
+                // Tạo tab cho category
                 const categoryTabs = categories.map((category: any) => ({
-                    id: category.id,
-                    name: category.name, // Lưu tên của category
+                    name: category.name,
+                    data: [category],
                     type: "category"
                 }));
 
@@ -70,12 +80,12 @@ const MenuTabNavigator = () => {
                 tabBarItemStyle: { width: 'auto' }
             }}
         >
-            {tabs.map((tab) => (
+            {tabs.map((tab, index) => (
                 <Tab.Screen
-                    key={tab.id}
+                    key={index}
                     name={tab.name}
                     component={tab.type === "combo" ? ComboList : CategoryList}
-                    initialParams={{ id: tab.id, type: tab.type, name: tab.name }}
+                    initialParams={{ items: tab.data, type: tab.type, name: tab.name }}
                 />
             ))}
         </Tab.Navigator>
