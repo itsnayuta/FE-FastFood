@@ -1,17 +1,27 @@
 import React, {useState} from 'react';
 import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
 import * as Animatable from 'react-native-animatable';
-import {useNavigation, CommonActions} from '@react-navigation/native'; // Thêm CommonActions
+import {useNavigation, CommonActions} from '@react-navigation/native';
+import type { CompositeNavigationProp } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { StackNavigationProp } from '@react-navigation/stack';
+
+type RootStackParamList = {
+  LoginScreen: undefined;
+  SignupScreen: undefined;
+  Menu: undefined;
+  MenuMain: { initialTab: string };
+};
+
+type NavigationProp = CompositeNavigationProp<
+  StackNavigationProp<RootStackParamList>,
+  BottomTabNavigationProp<RootStackParamList>
+>;
 
 const OptionsScreen = () => {
-  const navigation = useNavigation();
-
+  const navigation = useNavigation<NavigationProp>();
   const [menuFood, setismenufoodclicked] = useState(false);
   const [contactaboutus, setiscontactaboutusclicked] = useState(false);
-
-  const OptionsScreen = ({navigation}) => {
-    const [menuFood, setismenufoodclicked] = useState(false);
-    const [contactaboutus, setiscontactaboutusclicked] = useState(false);
 
     return (
       <>
@@ -235,10 +245,10 @@ const OptionsScreen = () => {
 
   const styles = StyleSheet.create({
     container: {
-      flex: 0,
+      flex: 1,
+      backgroundColor: '#fff',
       padding: 20,
     },
   });
-};
 
 export default OptionsScreen;
