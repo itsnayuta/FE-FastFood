@@ -1,9 +1,5 @@
-// import { API_HOST } from "@env"
-
-
-
-
-const API_BASE_URL = `http://192.168.1.17:8080/api`;
+import Config from 'react-native-config';
+const API_BASE_URL = Config.API_BASE_URL;
 
 export const getCategories = async () => {
     try {
