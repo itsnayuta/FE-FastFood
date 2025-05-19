@@ -18,239 +18,145 @@ type NavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<RootStackParamList>
 >;
 
+const renderCollapsibleSection = ({
+  title,
+  isExpanded,
+  setIsExpanded,
+  items,
+}: {
+  title: string;
+  isExpanded: boolean;
+  setIsExpanded: (value: boolean) => void;
+  items: { label: string; onPress: () => void }[];
+}) => (
+  <View
+    style={{
+      flex: 0,
+      paddingBottom: 20,
+      borderBottomWidth: 0.5,
+      borderColor: 'gray',
+      marginBottom: 30,
+    }}>
+    <View
+      style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      }}>
+      <Text style={{ fontSize: 18, fontWeight: '900' }}>{title}</Text>
+      <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)}>
+        <Image
+          style={{
+            width: 20,
+            height: 20,
+            transform: isExpanded ? [{ rotate: '180deg' }] : [],
+          }}
+          source={require('../assets/icons/down-arrow.png')}
+        />
+      </TouchableOpacity>
+    </View>
+
+    {isExpanded && (
+      <View style={{ flex: 0, marginTop: 10, gap: 10 }}>
+        {items.map((item, index) => (
+          <TouchableOpacity key={index} onPress={item.onPress}>
+            <Text>{item.label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    )}
+  </View>
+);
+
+
 const OptionsScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const [menuFood, setismenufoodclicked] = useState(false);
   const [contactaboutus, setiscontactaboutusclicked] = useState(false);
 
   return (
-    <>
-      <View style={styles.container}>
-        <View style={{flex: 0, gap: 5, marginBottom: 60}}>
-          <Text style={{fontSize: 40, fontWeight: 900}}>BẮT ĐẦU</Text>
-          <View style={{flexDirection: 'row', gap: 10}}>
-            <TouchableOpacity
-              onPress={() => navigation.navigate('LoginScreen')}>
-              <Text style={{fontWeight: 700}}>Đăng Nhập</Text>
-            </TouchableOpacity>
-            <Text style={{fontWeight: 700}}>/</Text>
-            <TouchableOpacity
-              onPress={() => navigation.navigate('SignupScreen')}>
-              <Text style={{fontWeight: 700}}>Đăng Ký →</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View
-          style={{
-            flex: 0,
-            paddingBottom: 20,
-            borderBottomWidth: 0.5,
-            borderColor: 'gray',
-            marginBottom: 30,
-          }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
-            <Text style={{fontSize: 18, fontWeight: 900}}>Danh Mục Món Ăn</Text>
-            <TouchableOpacity onPress={() => setismenufoodclicked(!menuFood)}>
-              <Image
-                style={{
-                  width: 20,
-                  height: 20,
-                  transform: menuFood ? [{rotate: '180deg'}] : [],
-                }}
-                source={require('../assets/icons/down-arrow.png')}></Image>
-            </TouchableOpacity>
-          </View>
-
-          {menuFood && (
-            <View style={{flex: 0, marginTop: 10, gap: 10}}>
-              <TouchableOpacity
-                onPress={() => {
-                  navigation.dispatch(
-                    CommonActions.reset({
-                      index: 0,
-                      routes: [
-                        {
-                          name: 'Menu',
-                          state: {
-                            routes: [
-                              {
-                                name: 'MenuMain',
-                                params: {initialTab: 'Combo nhóm 1'},
-                              },
-                            ],
-                          },
-                        },
-                      ],
-                    }),
-                  );
-                }}>
-                <Text>Combo 1 người</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity>
-                <Text>Combo nhóm</Text>
-              </TouchableOpacity>
-              <TouchableOpacity>
-                <Text>Gà Rán - Gà Quay</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  navigation.dispatch(
-                    CommonActions.reset({
-                      index: 0,
-                      routes: [
-                        {
-                          name: 'Menu',
-                          state: {
-                            routes: [
-                              {
-                                name: 'MenuMain',
-                                params: {initialTab: 'Thức ăn nhẹ'},
-                              },
-                            ],
-                          },
-                        },
-                      ],
-                    }),
-                  );
-                }}>
-                <Text>Thức Ăn Nhẹ</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
-
-        <View
-          style={{
-            flex: 0,
-            paddingBottom: 20,
-            borderBottomWidth: 0.5,
-            borderColor: 'gray',
-          }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
-            <Text style={{fontSize: 18, fontWeight: 900}}>Đơn Hàng</Text>
-            <TouchableOpacity
-              onPress={() => setiscontactaboutusclicked(!contactaboutus)}>
-              <Image
-                style={{
-                  width: 20,
-                  height: 20,
-                  transform: contactaboutus ? [{rotate: '180deg'}] : [],
-                }}
-                source={require('../assets/icons/down-arrow.png')}></Image>
-            </TouchableOpacity>
-          </View>
-
-          {contactaboutus && (
-            <View style={{flex: 0, marginTop: 10, gap: 10}}>
-              <TouchableOpacity>
-                <Text>Lịch Sử Đặt Hàng</Text>
-              </TouchableOpacity>
-              <TouchableOpacity>
-                <Text>Theo Dõi Đơn Hàng</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
-      </View>
-
-      <View
-        style={{
-          flex: 0,
-          paddingBottom: 20,
-          borderBottomWidth: 0.5,
-          borderColor: 'gray',
-          marginBottom: 30,
-        }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}>
-          <Text style={{fontSize: 18, fontWeight: 900}}>Danh Mục Món Ăn</Text>
-          <TouchableOpacity onPress={() => setismenufoodclicked(!menuFood)}>
-            <Image
-              style={{
-                width: 20,
-                height: 20,
-                transform: menuFood ? [{rotate: '180deg'}] : [],
-              }}
-              source={require('../assets/icons/down-arrow.png')}></Image>
+  <>
+    <View style={styles.container}>
+      <View style={{ flex: 0, gap: 5, marginBottom: 60 }}>
+        <Text style={{ fontSize: 40, fontWeight: '900' }}>BẮT ĐẦU</Text>
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
+            <Text style={{ fontWeight: '700' }}>Đăng Nhập</Text>
+          </TouchableOpacity>
+          <Text style={{ fontWeight: '700' }}>/</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('SignupScreen')}>
+            <Text style={{ fontWeight: '700' }}>Đăng Ký →</Text>
           </TouchableOpacity>
         </View>
-
-        {menuFood && (
-          <View style={{flex: 0, marginTop: 10, gap: 10}}>
-            <TouchableOpacity
-              onPress={() => {
-                navigation.dispatch(
-                  CommonActions.reset({
-                    index: 0,
-                    routes: [
-                      {
-                        name: 'Menu',
-                        state: {
-                          routes: [
-                            {
-                              name: 'MenuMain',
-                              params: {initialTab: 'Combo nhóm 1'},
-                            },
-                          ],
-                        },
-                      },
-                    ],
-                  }),
-                );
-              }}>
-              <Text>Combo 1 người</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity>
-              <Text>Combo nhóm</Text>
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Text>Gà Rán - Gà Quay</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                navigation.dispatch(
-                  CommonActions.reset({
-                    index: 0,
-                    routes: [
-                      {
-                        name: 'Menu',
-                        state: {
-                          routes: [
-                            {
-                              name: 'MenuMain',
-                              params: {initialTab: 'Thức ăn nhẹ'},
-                            },
-                          ],
-                        },
-                      },
-                    ],
-                  }),
-                );
-              }}>
-              <Text>Thức Ăn Nhẹ</Text>
-            </TouchableOpacity>
-          </View>
-        )}
       </View>
-    </>
-  );
+
+      {renderCollapsibleSection({
+        title: 'Danh Mục Món Ăn',
+        isExpanded: menuFood,
+        setIsExpanded: setismenufoodclicked,
+        items: [
+          {
+            label: 'Combo 1 người',
+            onPress: () =>
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [
+                    {
+                      name: 'Menu',
+                      state: {
+                        routes: [
+                          {
+                            name: 'MenuMain',
+                            params: { initialTab: 'Combo nhóm 1' },
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                })
+              ),
+          },
+          { label: 'Combo nhóm', onPress: () => {} },
+          { label: 'Gà Rán - Gà Quay', onPress: () => {} },
+          {
+            label: 'Thức Ăn Nhẹ',
+            onPress: () =>
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [
+                    {
+                      name: 'Menu',
+                      state: {
+                        routes: [
+                          {
+                            name: 'MenuMain',
+                            params: { initialTab: 'Thức ăn nhẹ' },
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                })
+              ),
+          },
+        ],
+      })}
+
+      {renderCollapsibleSection({
+        title: 'Đơn Hàng',
+        isExpanded: contactaboutus,
+        setIsExpanded: setiscontactaboutusclicked,
+        items: [
+          { label: 'Lịch Sử Đặt Hàng', onPress: () => {} },
+          { label: 'Theo Dõi Đơn Hàng', onPress: () => {} },
+        ],
+      })}
+    </View>
+  </>
+);
+
 };
 
 const styles = StyleSheet.create({
