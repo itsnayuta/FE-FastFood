@@ -13,7 +13,7 @@ import { getCombos } from "../services/api";
 import { Combo } from "../types/index";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-
+import { addToCart } from "../utils/cart";
 interface ComboListProps {
     route: any;
 }
@@ -47,6 +47,7 @@ const ComboList: React.FC<ComboListProps> = ({ route }) => {
     }, [name]);
 
     const handleAddToCart = (combo: Combo) => {
+        addToCart(combo);
         console.log("Thêm vào giỏ hàng:", combo.name);
     };
 
