@@ -6,7 +6,7 @@ export type CartItem = (Product | Combo) & {
     quality: number;
 };
 
-// Định nghĩa các màn trong Stack
+
 export type RootStackParamList = {
     Cart: undefined;
     Payment: {
