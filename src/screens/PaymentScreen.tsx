@@ -14,6 +14,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Image,
+  Alert,
 } from 'react-native';
 
 interface CustomCheckBoxProps {
@@ -68,24 +69,53 @@ const PaymentScreen: React.FC = () => {
   };
 
 
-  const handlePayment = () => {
-    let newErrors: { [key: string]: string } = {};
-  
-    if (!formData.lastName.trim()) newErrors.lastName = "Vui lòng nhập họ.";
-    if (!formData.firstName.trim()) newErrors.firstName = "Vui lòng nhập tên.";
-    if (!formData.phoneNumber.trim()) newErrors.phoneNumber = "Vui lòng nhập số điện thoại.";
-    if (!formData.email.trim()) newErrors.email = "Vui lòng nhập email.";
-    if (!formData.streetName.trim()) newErrors.streetName = "Vui lòng nhập tên đường.";
-    if (!formData.ward.trim()) newErrors.ward = "Vui lòng nhập Phường/Xã.";
+  const handlePayment = async () => {
+  let newErrors: { [key: string]: string } = {};
 
-    if (Object.keys(newErrors).length > 0) {
-      setError(newErrors);
-      return;
-    }
-  
-    setError({});
-    navigation.navigate("ProcessingOrder" as never)
+  if (!formData.lastName.trim()) newErrors.lastName = "Vui lòng nhập họ.";
+  if (!formData.firstName.trim()) newErrors.firstName = "Vui lòng nhập tên.";
+  if (!formData.phoneNumber.trim()) newErrors.phoneNumber = "Vui lòng nhập số điện thoại.";
+  if (!formData.email.trim()) newErrors.email = "Vui lòng nhập email.";
+  if (!formData.streetName.trim()) newErrors.streetName = "Vui lòng nhập tên đường.";
+  if (!formData.ward.trim()) newErrors.ward = "Vui lòng nhập Phường/Xã.";
+
+  if (Object.keys(newErrors).length > 0) {
+    setError(newErrors);
+    return;
+  }
+
+  setError({});
+
+  const memberId = 1;
+
+  const bill = {
+    memberId: memberId,
+    paymentMethod: selectedMethod,
+    discount: 0,
+    totalPayment: totalPrice + shippingFee,
+    tax: 0,
+    paymentStatus: "PENDING", 
+    voucher: null, 
   };
+
+  try {
+    const response = await fetch('http://192.168.41.104:8080/api/bills', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(bill),
+    });
+
+    if (response.ok) {
+      navigation.navigate("ProcessingOrder" as never);
+    } else {
+      Alert.alert("Lỗi", "Không thể gửi đơn hàng. Vui lòng thử lại!");
+    }
+  } catch (error) {
+    Alert.alert("Lỗi", "Không thể kết nối tới máy chủ!");
+  }
+};
   
 
   const icons = {

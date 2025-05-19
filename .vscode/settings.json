@@ -1,4 +1,25 @@
 {
     "java.compile.nullAnalysis.mode": "automatic",
-    "java.configuration.updateBuildConfiguration": "automatic"
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "files.exclude": {
+        "**/node_modules": true
+    },
+    "search.exclude": {
+        "**/node_modules": true
+    },
+    "java.configuration.excludeFolders": [
+        "**/node_modules"
+    ],
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar"
+    ],
+    "java.configuration.checkProjectSettingsExclusively": true,
+    "java.errors.incompleteClasspath.severity": "ignore",
+    "java.import.gradle.enabled": false,
+    "java.import.maven.enabled": false,
+    "java.import.gradle.wrapper.enabled": false,
+    "java.import.gradle.useWrapper": false,
+    "java.import.gradle.useWrapperJar": false,
+    "java.import.gradle.useWrapperJarTask": false,
+    "java.import.gradle.useWrapperJarTask.enabled": false
 }

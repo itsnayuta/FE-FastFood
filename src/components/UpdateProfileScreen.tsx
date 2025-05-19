@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import CustomInput from './CustomInput';
 import CustomButton from './CustomButton';
@@ -11,6 +11,11 @@ type ProfileScreenProps = {
 };
 
 const UpdateProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [mobile, setMobile] = useState('');
+  const [password, setPassword] = useState('');
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Update Profile</Text>
@@ -19,12 +24,16 @@ const UpdateProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
         <CustomInput
           placeholder="Name"
           iconName="person-outline"
+          value={name}
+          onChangeText={setName}
         />
         
         <CustomInput
           placeholder="Email address"
           iconName="mail-outline"
           keyboardType="email-address"
+          value={email}
+          onChangeText={setEmail}
         />
         
         <CustomInput
@@ -32,12 +41,16 @@ const UpdateProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           iconName="call-outline"
           keyboardType="phone-pad"
           countryCode="+01"
+          value={mobile}
+          onChangeText={setMobile}
         />
         
         <CustomInput
           placeholder="Password"
           iconName="lock-closed-outline"
           secureTextEntry
+          value={password}
+          onChangeText={setPassword}
         />
         
         <Text style={styles.termsText}>

@@ -32,3 +32,27 @@ export interface ProductInCombo {
     comboId: number,
     quantity: number
 }
+export interface FoodItem {
+    id: number;
+    name: string;
+    price: number;
+    quality: number;
+}
+
+export type RootStackParamList = {
+    Cart: undefined;
+    Payment: {
+        foodItems: FoodItem[];
+        totalPrice: number;
+    };
+    ProcessingOrder: undefined;
+    OrderSuccess: undefined; 
+};
+
+export interface CartItem {
+    id: number;
+    name: string;
+    price: number;
+    imageUrl: string;
+    quality: number;
+}
