@@ -1,12 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // Add useEffect
 import {
     View, Text, ScrollView, StyleSheet, Image,
-    TouchableOpacity, FlatList, Dimensions, Alert, TextInput
+    TouchableOpacity, FlatList, Dimensions, TextInput
 } from "react-native";
-
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RootStackParamList, CartItem } from '../types';
-import { getCart } from "../utils/cart";
+import { getCart, removeFromCart, updateQuantity, addCartListener } from "../utils/cart";
 import { useFocusEffect } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
@@ -15,15 +14,28 @@ const CartScreen = () => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const [foodItem, setFoodItem] = useState<CartItem[]>(getCart());
     const [coupon, setCoupon] = useState("");
+
+    // Update foodItem when cart changes
+    useEffect(() => {
+        const unsubscribe = addCartListener(() => {
+            setFoodItem([...getCart()]); // Update foodItem with a new array reference
+        });
+        return unsubscribe; // Cleanup on unmount
+    }, []);
+
+    // Đồng bộ giỏ hàng 
     useFocusEffect(
         React.useCallback(() => {
-            setFoodItem(getCart());
+            setFoodItem([...getCart()]); 
         }, [])
     );
+
+    // Tính tổng giá
     const getTotalPrice = (items: CartItem[]) => {
         return items.reduce((sum, item) => sum + item.price * item.quality, 0);
     };
-console.log("foodItem", foodItem);
+
+    // Chuyển đến màn hình thanh toán
     const handlePayment = () => {
         const totalPrice = getTotalPrice(foodItem) + 10000;
         navigation.navigate('Payment', {
@@ -32,28 +44,33 @@ console.log("foodItem", foodItem);
         });
     };
 
+    // Cập nhật số lượng sản phẩm
     const handleQuantityChange = (id: number, type: 'increase' | 'decrease') => {
         setFoodItem(prev =>
             prev.map(item =>
                 item.id === id
                     ? {
-                        ...item,
-                        quality:
-                            type === 'increase'
-                                ? item.quality + 1
-                                : item.quality > 1
-                                ? item.quality - 1
-                                : 1,
-                    }
+                          ...item,
+                          quality:
+                              type === 'increase'
+                                  ? item.quality + 1
+                                  : item.quality > 1
+                                  ? item.quality - 1
+                                  : 1,
+                      }
                     : item
             )
         );
+        updateQuantity(id, type === 'increase' ? 0 : 1);
     };
 
+    // Xóa sản phẩm khỏi giỏ hàng
     const handleDelete = (id: number) => {
         setFoodItem(prev => prev.filter(item => item.id !== id));
+        removeFromCart(id);
     };
 
+    // Render từng mục trong giỏ hàng
     const renderItem = ({ item }: { item: CartItem }) => (
         <View style={style.cardProducts}>
             <View style={style.detailProducts}>
@@ -88,12 +105,18 @@ console.log("foodItem", foodItem);
             <Image style={style.logoSize} source={require('../assets/product_logo/kfc-logo.jpg')} />
             <Text style={style.fontTextCart}>GIỎ HÀNG CỦA TÔI</Text>
 
-            <FlatList
-                data={foodItem}
-                renderItem={renderItem}
-                keyExtractor={(item) => item.id.toString()}
-                scrollEnabled={false}
-            />
+            {foodItem.length === 0 ? (
+                <Text style={{ fontSize: 16, textAlign: 'center', marginVertical: 20 }}>
+                    Giỏ hàng của bạn đang trống
+                </Text>
+            ) : (
+                <FlatList
+                    data={foodItem}
+                    renderItem={renderItem}
+                    keyExtractor={(item) => item.id.toString()}
+                    scrollEnabled={false}
+                />
+            )}
 
             <View style={style.paymentProducts}>
                 <Text style={style.sectionTitle}>{foodItem.length} Món</Text>
@@ -128,7 +151,11 @@ console.log("foodItem", foodItem);
                     </Text>
                 </View>
 
-                <TouchableOpacity onPress={handlePayment} style={style.checkoutButton}>
+                <TouchableOpacity
+                    onPress={handlePayment}
+                    style={[style.checkoutButton, { opacity: foodItem.length === 0 ? 0.5 : 1 }]}
+                    disabled={foodItem.length === 0}
+                >
                     <Text style={style.checkoutText}>Thanh Toán</Text>
                 </TouchableOpacity>
             </View>

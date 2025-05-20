@@ -1,5 +1,5 @@
-    import Config from 'react-native-config';
-    const API_BASE_URL = Config.API_BASE_URL;
+import Config from 'react-native-config';
+const API_BASE_URL = Config.API_BASE_URL;
 
 console.log('Base URL:', Config.API_BASE_URL);
 export const getCategories = async () => {
