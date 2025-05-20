@@ -17,7 +17,8 @@ import {
   Alert,
   Linking,
 } from 'react-native';
-
+import { processOrder, processPayment } from '../services/api'; // Adjust the import path as necessary
+import AsyncStorage from '@react-native-async-storage/async-storage';
 type PaymentScreenRouteProp = RouteProp<RootStackParamList, "Payment">;
 type PaymentScreenNavigationProp = StackNavigationProp<RootStackParamList, "Payment">;
 
@@ -38,6 +39,8 @@ const CustomCheckBox: React.FC<CustomCheckBoxProps> = ({ value, onValueChange })
     </TouchableOpacity>
   );
 };
+
+
 
 const PaymentScreen: React.FC = () => {
   const navigation = useNavigation<PaymentScreenNavigationProp>();
@@ -87,42 +90,41 @@ const PaymentScreen: React.FC = () => {
   }
 
   setError({});
+  const userStr = await AsyncStorage.getItem('user');
+  const user = userStr ? JSON.parse(userStr) : {};
+  const memberId = user.id || user.memberId;
 
-  const memberId = 1;
-
+  const orderPayload = {
+        createdAt: new Date().toISOString(),
+        memberId: memberId,
+        note: formData.note,
+        status: "PENDING",
+      };
+  const orderRes = await processOrder(orderPayload);
+  const orderId = orderRes.id;
+  console.log("Order ID:", orderId);
   const bill = {
     memberId: memberId,
+    orderId: orderId,
     paymentMethod: selectedMethod === "cod" ? "CASH" : "VNPAY",
-    discount: 0,
+    discount: voucherDiscount,
     totalPayment: totalPrice - voucherDiscount,
     tax: 0,
     paymentStatus: "PENDING", 
-    voucher: null, 
+    voucher: voucher ? voucher.id : null,
   };
-
+  console.log("Bill data:", bill);
   try {
-    const response = await fetch('http://192.168.41.104:8080/api/payments/process', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(bill),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
+    const response = await processPayment(bill);
+    if (response.status < 200 || response.status >= 300) {
+      const errorText = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
       Alert.alert("Lỗi", `Lỗi từ server: ${errorText}`);
       return;
     }
 
-    const responseText = await response.text();
-    let responseData;
-    
-    try {
-      responseData = JSON.parse(responseText);
-    } catch (e) {
-      // If response is not JSON, treat it as payment URL for VNPAY
-      responseData = { paymentUrl: responseText };
+    let responseData = response.data;
+    if (typeof responseData === 'string') {
+      responseData = { paymentUrl: responseData };
     }
 
     // Navigate to OrderSuccess screen directly
