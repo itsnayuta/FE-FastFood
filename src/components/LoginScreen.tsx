@@ -205,6 +205,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
         Alert.alert('Unexpected Error', 'Something went wrong. Please try again.');
       }
       throw err;
+    }finally {
+      console.log('[Backend Request] Finished', apiUrl);
     }
   };
 

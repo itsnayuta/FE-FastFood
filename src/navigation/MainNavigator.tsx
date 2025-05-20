@@ -13,7 +13,6 @@ import OptionsScreen from "../screens/OptionsScreen";
 import ProductDetailsScreen from "../screens/ProductDetailsScreen";
 import ComboDetails from "../screens/ComboDetailsScreen";
 import PaymentScreen from "../screens/PaymentScreen";
-import ProcessingOrderScreen from "../screens/ProcessingOrderScreen";
 import OrderSuccessScreen from "../screens/OrderSuccessScreen";
 import LoginScreen from "../components/LoginScreen";
 import SignupScreen from "../components/SignupScreen";
@@ -40,8 +39,8 @@ const CartStack = () => {
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="CartMain" component={CartScreen} />
             <Stack.Screen name="Payment" component={PaymentScreen} />
-            <Stack.Screen name="ProcessingOrder" component={ProcessingOrderScreen} />
             <Stack.Screen name="OrderSuccess" component={OrderSuccessScreen} />
+            <Stack.Screen name="LoginScreen" component={LoginScreen} />
         </Stack.Navigator>
     );
 };
