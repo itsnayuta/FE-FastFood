@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
-
+import { addToCart } from "../utils/cart";
+import { Product } from "../types/index";
 interface ProductDetailProps {
     route: any;
 }
@@ -9,15 +10,15 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ route }) => {
     const { product } = route.params;
 
     // Hàm xử lý khi bấm nút "Thêm vào giỏ hàng"
-    const handleAddToCart = () => {
-        console.log("Đã thêm vào giỏ hàng:", product.name);
-
+    const handleAddToCart = (product: Product) => {
+        addToCart(product);
+        console.log("Thêm vào giỏ hàng:", product.name);
     };
 
     return (
         <View style={styles.container}>
             {/* Ảnh sản phẩm */}
-         
+
             <Image source={{ uri: product.imageUrl }} style={styles.productImage} />
 
             {/* Thông tin sản phẩm */}
@@ -26,7 +27,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ route }) => {
             <Text style={styles.productDescription}>{product.description}</Text>
 
             {/* Nút "Thêm vào giỏ hàng" */}
-            <TouchableOpacity style={styles.addToCartButton} onPress={handleAddToCart}>
+            <TouchableOpacity style={styles.addToCartButton} onPress={() => handleAddToCart(product)}>
                 <Text style={styles.addToCartText}>Thêm vào giỏ hàng</Text>
             </TouchableOpacity>
         </View>

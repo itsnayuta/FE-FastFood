@@ -13,6 +13,8 @@ import { getProductInComboByComboId, getProductById } from "../services/api";
 import { Product } from "../types/index"
 import { ProductInCombo } from "../types/index"
 import { Combo } from "../types/index"
+import { addToCart } from "../utils/cart";
+import { useNavigation } from "@react-navigation/native";
 
 interface ComboDetailsProps {
     route: any;
@@ -26,15 +28,25 @@ const ComboDetails: React.FC<ComboDetailsProps> = ({ route }) => {
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const productInCombos: ProductInCombo[] = await getProductInComboByComboId(combo.id);
+                const rawProductInCombos = await getProductInComboByComboId(combo.id);
+
+                // Chuyển đổi về đúng interface ProductInCombo
+                const productInCombos: ProductInCombo[] = rawProductInCombos.map((item: any) => ({
+                    id: item.id,
+                    productId: item.product?.id,  // lấy id từ object product
+                    comboId: item.combo?.id,      // lấy id từ object combo
+                    quantity: item.quantity
+                }));
+
                 const productDetails = await Promise.all(
                     productInCombos.map(async (item) => {
-                        const product = await getProductById(item.id);
+                        const product = await getProductById(item.productId);
                         console.log("Fetched product for id", item.productId, product);
                         return { ...product, quantity: item.quantity };
                     })
                 );
-                setProducts(productDetails);
+                // Lọc ra các sản phẩm hợp lệ
+                setProducts(productDetails.filter(Boolean));
             } catch (error) {
                 console.error("Lỗi khi tải sản phẩm trong combo:", error);
             } finally {
@@ -45,9 +57,9 @@ const ComboDetails: React.FC<ComboDetailsProps> = ({ route }) => {
         fetchProducts();
     }, [combo.id]);
 
-    const handleAddComboToCart = () => {
-        // 🛒 Thêm tất cả sản phẩm vào giỏ hàng
-        Alert.alert("Thành công", `Đã thêm combo "${combo.name}" vào giỏ hàng!`);
+    const handleAddToCart = (combo: Combo) => {
+        addToCart(combo);
+        console.log("Thêm vào giỏ hàng:", combo.name);
     };
 
     if (loading) {
@@ -62,7 +74,7 @@ const ComboDetails: React.FC<ComboDetailsProps> = ({ route }) => {
             ) : (
                 <FlatList
                     data={products}
-                    keyExtractor={(item) => item.id.toString()}
+                    keyExtractor={(item) => `${item.id}-${item.quantity}`}
                     renderItem={({ item }) => (
                         <View style={styles.productCard}>
                             <Image source={{ uri: item.imageUrl }} style={styles.productImage} />
@@ -74,7 +86,7 @@ const ComboDetails: React.FC<ComboDetailsProps> = ({ route }) => {
                         </View>
                     )}
                     ListFooterComponent={
-                        <TouchableOpacity style={styles.addToCartButton} onPress={handleAddComboToCart}>
+                        <TouchableOpacity style={styles.addToCartButton} onPress={() => handleAddToCart(combo)}>
                             <Text style={styles.addToCartText}>Thêm vào giỏ hàng</Text>
                         </TouchableOpacity>
                     }
