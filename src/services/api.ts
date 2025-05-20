@@ -1,7 +1,7 @@
 import Config from 'react-native-config';
 const API_BASE_URL = Config.API_BASE_URL;
 
-
+console.log('Base URL:', Config.API_BASE_URL);
 export const getCategories = async () => {
     try {
         const response = await fetch(`${API_BASE_URL}/categories/listAll`);
