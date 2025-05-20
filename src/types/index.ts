@@ -12,6 +12,7 @@ export interface Combo {
 export interface Category {
     id: number;
     name: string;
+    imageUrl: string;
 }
 
 
@@ -46,7 +47,7 @@ export type RootStackParamList = {
         totalPrice: number;
     };
     ProcessingOrder: undefined;
-    OrderSuccess: undefined; 
+    OrderSuccess: undefined;
 };
 
 export interface CartItem {

@@ -4,7 +4,7 @@ import { createMaterialTopTabNavigator } from '@react-navigation/material-top-ta
 import { getCategories, getCombos } from '../services/api';
 import ComboList from '../components/ComboList';
 import CategoryList from '../components/CategoryList';
-
+import { getMenuTabs } from '../services/getMenuTabs';
 const Tab = createMaterialTopTabNavigator();
 
 const MenuTabNavigator = ({ initialTab }: { initialTab?: string }) => {
@@ -14,32 +14,10 @@ const MenuTabNavigator = ({ initialTab }: { initialTab?: string }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const combos = await getCombos();
-        const categories = await getCategories();
-
-        const comboTabs = Object.values(
-          combos.reduce((groups: Record<string, any>, combo: any) => {
-            if (!groups[combo.type]) {
-              groups[combo.type] = {
-                name: combo.type,
-                data: [],
-                type: "combo",
-              };
-            }
-            groups[combo.type].data.push(combo);
-            return groups;
-          }, {})
-        );
-
-        const categoryTabs = categories.map((category: any) => ({
-          name: category.name,
-          data: [category],
-          type: "category",
-        }));
-
-        setTabs([...comboTabs, ...categoryTabs]);
+        const allTabs = await getMenuTabs();
+        setTabs(allTabs);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching menu tabs:", error);
       } finally {
         setLoading(false);
       }
