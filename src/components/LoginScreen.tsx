@@ -52,12 +52,11 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
     if (isValid) {
       setLoading(true);
       try {
-        
-        const {user}= await sendIdTokenToBackend(email, password);
+        const {user} = await sendIdTokenToBackend(email, password);
         Alert.alert('Success', 'Logged in successfully!');
-        if(user.role === 'ADMIN') {
-        navigation.navigate('AdminRoot');
-        }else{
+        if (user.role === 'ADMIN') {
+          navigation.navigate('AdminRoot');
+        } else {
           navigation.navigate('MainRoot');
         }
       } catch (error: any) {
@@ -72,9 +71,13 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
                 auth.EmailAuthProvider.credential(email, password)
               );
               const idToken = await existingUser.user.getIdToken();
-              await sendIdTokenToBackend(idToken, password);
+              const backendData = await sendIdTokenToBackend(idToken, password);
               Alert.alert('Success', 'Logged in successfully!');
-              navigation.navigate('Home'); // Navigate to home screen
+              if (backendData.user.role === 'ADMIN') {
+                navigation.navigate('AdminRoot');
+              } else {
+                navigation.navigate('MainRoot');
+              }
               return;
             } catch (signInError: any) {
               errorMessage = 'Invalid email or password';
@@ -105,7 +108,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
       await GoogleSignin.signOut(); // Clear any existing session
       
       console.log('[GoogleSignIn] Checking Play Services...');
-      await GoogleSignin.hasPlayServices();      console.log('[GoogleSignIn] Initiating sign-in...');
+      await GoogleSignin.hasPlayServices();
+      console.log('[GoogleSignIn] Initiating sign-in...');
       const response = await GoogleSignin.signIn();
       const idToken = response?.data?.idToken;
       if (!idToken) {
@@ -116,12 +120,15 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
       const userCredential = await auth().signInWithCredential(googleCredential);
       const firebaseIdToken = await userCredential.user.getIdToken(true);
 
-      await sendIdTokenToBackend(firebaseIdToken);
-      await AsyncStorage.setItem('user', JSON.stringify(userCredential.user));
       const backendData = await sendIdTokenToBackend(firebaseIdToken);
       await AsyncStorage.setItem('user', JSON.stringify(backendData.user));
       Alert.alert('Success', 'Logged in with Google successfully!');
-      navigation.navigate('Home'); // Navigate to home screen
+      
+      if (backendData.user.role === 'ADMIN') {
+        navigation.navigate('AdminRoot');
+      } else {
+        navigation.navigate('MainRoot');
+      }
     } catch (error: any) {
       console.error('[GoogleSignIn Error]', error);
       Alert.alert(

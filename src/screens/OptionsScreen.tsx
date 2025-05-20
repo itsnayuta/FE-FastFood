@@ -1,10 +1,11 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import {useNavigation, CommonActions} from '@react-navigation/native';
 import type {CompositeNavigationProp} from '@react-navigation/native';
 import type {BottomTabNavigationProp} from '@react-navigation/bottom-tabs';
 import type {StackNavigationProp} from '@react-navigation/stack';
+import { authStorage } from '../utils/authStorage';
 
 type RootStackParamList = {
   LoginScreen: undefined;
@@ -73,22 +74,39 @@ const OptionsScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const [menuFood, setismenufoodclicked] = useState(false);
   const [contactaboutus, setiscontactaboutusclicked] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    checkLoginStatus();
+  }, []);
+
+  const checkLoginStatus = async () => {
+    try {
+      const token = await authStorage.getAccessToken();
+      setIsLoggedIn(!!token);
+    } catch (error) {
+      console.error('Error checking login status:', error);
+      setIsLoggedIn(false);
+    }
+  };
 
   return (
   <>
     <View style={styles.container}>
-      <View style={{ flex: 0, gap: 5, marginBottom: 60 }}>
-        <Text style={{ fontSize: 40, fontWeight: '900' }}>BẮT ĐẦU</Text>
-        <View style={{ flexDirection: 'row', gap: 10 }}>
-          <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
-            <Text style={{ fontWeight: '700' }}>Đăng Nhập</Text>
-          </TouchableOpacity>
-          <Text style={{ fontWeight: '700' }}>/</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('SignupScreen')}>
-            <Text style={{ fontWeight: '700' }}>Đăng Ký →</Text>
-          </TouchableOpacity>
+      {!isLoggedIn && (
+        <View style={{ flex: 0, gap: 5, marginBottom: 60 }}>
+          <Text style={{ fontSize: 40, fontWeight: '900' }}>BẮT ĐẦU</Text>
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
+              <Text style={{ fontWeight: '700' }}>Đăng Nhập</Text>
+            </TouchableOpacity>
+            <Text style={{ fontWeight: '700' }}>/</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('SignupScreen')}>
+              <Text style={{ fontWeight: '700' }}>Đăng Ký →</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      )}
 
       {renderCollapsibleSection({
         title: 'Danh Mục Món Ăn',
