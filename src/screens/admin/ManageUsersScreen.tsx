@@ -12,7 +12,7 @@ interface User {
 }
 
 const ManageUsersScreen = () => {
-    const [users, setUsers] = useState([]);
+    const [users, setUsers] = useState<User[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -25,17 +25,46 @@ const ManageUsersScreen = () => {
           const userData = await api.get('/admin/get-all-users');
           setUsers(userData.data);
         } catch (err) {
-        //   setError("Failed to load profile. Please try again.");
           Alert.alert('Error', 'Failed to load users. Please try again.');
         } finally {
-            console.log('users', users);
           setLoading(false);
         }
-      };
+    };
     
-      useEffect(() => {
+    useEffect(() => {
         fetchAllUsers();
-      }, []);
+    }, []);
+
+    const handleDeleteUser = async (userId: string) => {
+        Alert.alert(
+            'Confirm Delete',
+            'Are you sure you want to delete this user? This action cannot be undone.',
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel'
+                },
+                {
+                    text: 'Delete',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            setLoading(true);
+                            await api.delete(`/admin/users/${userId}`);
+                            Alert.alert('Success', 'User deleted successfully');
+                            // Refresh the user list
+                            fetchAllUsers();
+                        } catch (error) {
+                            console.error('Error deleting user:', error);
+                            Alert.alert('Error', 'Failed to delete user. Please try again.');
+                        } finally {
+                            setLoading(false);
+                        }
+                    }
+                }
+            ]
+        );
+    };
 
     const renderUserItem = ({ item }: { item: User }) => (
         <View style={styles.userCard}>
@@ -49,10 +78,10 @@ const ManageUsersScreen = () => {
                 </View>
             </View>
             <View style={styles.actionButtons}>
-                <TouchableOpacity style={[styles.actionButton, styles.editButton]}>
-                    <Ionicons name="pencil" size={20} color="#4A90E2" />
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.actionButton, styles.deleteButton]}>
+                <TouchableOpacity 
+                    style={[styles.actionButton, styles.deleteButton]}
+                    onPress={() => handleDeleteUser(item.id)}
+                >
                     <Ionicons name="trash" size={20} color="#FF3B30" />
                 </TouchableOpacity>
             </View>
@@ -82,10 +111,6 @@ const ManageUsersScreen = () => {
                 keyExtractor={item => item.email}
                 contentContainerStyle={styles.listContainer}
             />
-
-            <TouchableOpacity style={styles.addButton}>
-                <Ionicons name="add" size={24} color="#FFFFFF" />
-            </TouchableOpacity>
         </SafeAreaView>
     );
 };

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, SafeAreaView, Image, Alert } from "react-native";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import api from "../../utils/api";
+import { useNavigation } from "@react-navigation/native";
+import type { StackNavigationProp } from "@react-navigation/stack";
 
 interface Product {
     id: string;
@@ -9,9 +11,20 @@ interface Product {
     description: string;
     price: number;
     imageUrl: string;
+    categoryId: number;
+    size: string;
 }
 
+type ManageProductStackParamList = {
+    ManageProductMain: undefined;
+    AddProduct: undefined;
+    EditProduct: { product: Product };
+};
+
+type ManageProductScreenNavigationProp = StackNavigationProp<ManageProductStackParamList>;
+
 const ManageProductScreen = () => {
+    const navigation = useNavigation<ManageProductScreenNavigationProp>();
     const [searchQuery, setSearchQuery] = useState("");
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(false);
@@ -25,17 +38,54 @@ const ManageProductScreen = () => {
           const productData = await api.get('/admin/get-all-products');
           setProducts(productData.data);
         } catch (err) {
-        //   setError("Failed to load profile. Please try again.");
           Alert.alert('Error', 'Failed to load products. Please try again.');
         } finally {
-            console.log('products', products);
           setLoading(false);
         }
-      };
+    };
     
-      useEffect(() => {
+    useEffect(() => {
         fetchAllProducts();
-      }, []);
+    }, []);
+
+    const handleAddPress = () => {
+        navigation.navigate('AddProduct');
+    };
+
+    const handleEditPress = (product: Product) => {
+        navigation.navigate('EditProduct', { product });
+    };
+
+    const handleDeleteProduct = async (productId: string) => {
+        Alert.alert(
+            'Confirm Delete',
+            'Are you sure you want to delete this product?',
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel'
+                },
+                {
+                    text: 'Delete',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            setLoading(true);
+                            await api.delete(`/admin/products/${productId}`);
+                            Alert.alert('Success', 'Product deleted successfully');
+                            // Refresh the product list
+                            fetchAllProducts();
+                        } catch (error) {
+                            console.error('Error deleting product:', error);
+                            Alert.alert('Error', 'Failed to delete product. Please try again.');
+                        } finally {
+                            setLoading(false);
+                        }
+                    }
+                }
+            ]
+        );
+    };
 
     const renderProductItem = ({ item }: { item: Product }) => (
         <View style={styles.productCard}>
@@ -43,7 +93,6 @@ const ManageProductScreen = () => {
                 <Image
                     source={{ uri: item.imageUrl }}
                     style={styles.productImage}
-                    // defaultSource={require('../../../assets/placeholder.png')}
                 />
                 <View style={styles.categoryTag}>
                     <Text style={styles.categoryText}>{item.description}</Text>
@@ -54,10 +103,16 @@ const ManageProductScreen = () => {
                 <Text style={styles.productPrice}>{item.price}</Text>
             </View>
             <View style={styles.actionButtons}>
-                <TouchableOpacity style={[styles.actionButton, styles.editButton]}>
+                <TouchableOpacity 
+                    style={[styles.actionButton, styles.editButton]}
+                    onPress={() => handleEditPress(item)}
+                >
                     <Ionicons name="pencil" size={20} color="#4A90E2" />
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.actionButton, styles.deleteButton]}>
+                <TouchableOpacity 
+                    style={[styles.actionButton, styles.deleteButton]}
+                    onPress={() => handleDeleteProduct(item.id)}
+                >
                     <Ionicons name="trash" size={20} color="#FF3B30" />
                 </TouchableOpacity>
             </View>
@@ -95,12 +150,12 @@ const ManageProductScreen = () => {
             <FlatList
                 data={products}
                 renderItem={renderProductItem}
-                keyExtractor={item => item.name}
+                keyExtractor={item => item.id}
                 numColumns={2}
                 contentContainerStyle={styles.listContainer}
             />
 
-            <TouchableOpacity style={styles.addButton}>
+            <TouchableOpacity style={styles.addButton} onPress={handleAddPress}>
                 <Ionicons name="add" size={24} color="#FFFFFF" />
             </TouchableOpacity>
         </SafeAreaView>
