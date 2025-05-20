@@ -1,13 +1,13 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 // Các màn hình admin
 import AdminHomeScreen from "../screens/admin/AdminHomeScreen";
 import ManageUsersScreen from "../screens/admin/ManageUsersScreen";
 import ManageOrdersScreen from "../screens/admin/ManageOrdersScreen";
 import ManageProductScreen from "../screens/admin/ManageProductScreen";
-import BottomTab from "../components/BottomTab";
 
 // Tạo stack cho từng tab admin
 const AdminHomeStack = createStackNavigator();
@@ -19,7 +19,6 @@ const ManageProductStack = createStackNavigator();
 const AdminHomeStackNavigator = () => (
     <AdminHomeStack.Navigator screenOptions={{ headerShown: false }}>
         <AdminHomeStack.Screen name="AdminHomeMain" component={AdminHomeScreen} />
-        {/* Nếu cần màn hình con khác cho tab này, thêm ở đây */}
     </AdminHomeStack.Navigator>
 );
 
@@ -49,19 +48,73 @@ const Tab = createBottomTabNavigator();
 
 const AdminNavigator = () => {
     return (
-        <>
-            {/* Nếu bạn có Header component riêng cho admin thì để ở đây */}
-            {/* <AdminHeader /> */}
-            <Tab.Navigator
-                tabBar={(props) => <BottomTab {...props} />} // Dùng component tab bar giống MainNavigator nếu bạn có
-                screenOptions={{ headerShown: true }} // ẩn header của tab navigator
-            >
-                <Tab.Screen name="Admin Home" component={AdminHomeStackNavigator} />
-                <Tab.Screen name="Manage Users" component={ManageUsersStackNavigator} />
-                <Tab.Screen name="Manage Orders" component={ManageOrdersStackNavigator} />
-                <Tab.Screen name="Manage Product" component={ManageProductStackNavigator} />
-            </Tab.Navigator>
-        </>
+        <Tab.Navigator
+            screenOptions={({ route }) => ({
+                headerShown: false,
+                tabBarIcon: ({ focused, color, size }) => {
+                    let iconName: string;
+
+                    switch (route.name) {
+                        case 'Admin Home':
+                            iconName = focused ? 'home' : 'home-outline';
+                            break;
+                        case 'Manage Users':
+                            iconName = focused ? 'people' : 'people-outline';
+                            break;
+                        case 'Manage Orders':
+                            iconName = focused ? 'receipt' : 'receipt-outline';
+                            break;
+                        case 'Manage Product':
+                            iconName = focused ? 'fast-food' : 'fast-food-outline';
+                            break;
+                        default:
+                            iconName = 'help-circle-outline';
+                    }
+
+                    return <Ionicons name={iconName} size={size} color={color} />;
+                },
+                tabBarActiveTintColor: '#4A90E2',
+                tabBarInactiveTintColor: 'gray',
+                tabBarStyle: {
+                    paddingBottom: 5,
+                    paddingTop: 5,
+                    height: 60
+                },
+                tabBarLabelStyle: {
+                    fontSize: 12,
+                    fontWeight: '500'
+                }
+            })}
+        >
+            <Tab.Screen 
+                name="Admin Home" 
+                component={AdminHomeStackNavigator}
+                options={{
+                    title: 'Trang chủ'
+                }}
+            />
+            <Tab.Screen 
+                name="Manage Users" 
+                component={ManageUsersStackNavigator}
+                options={{
+                    title: 'Người dùng'
+                }}
+            />
+            <Tab.Screen 
+                name="Manage Orders" 
+                component={ManageOrdersStackNavigator}
+                options={{
+                    title: 'Đơn hàng'
+                }}
+            />
+            <Tab.Screen 
+                name="Manage Product" 
+                component={ManageProductStackNavigator}
+                options={{
+                    title: 'Sản phẩm'
+                }}
+            />
+        </Tab.Navigator>
     );
 };
 
