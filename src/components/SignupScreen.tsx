@@ -162,9 +162,9 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Create an account,</Text>
+        <Text style={styles.title}>Tạo tài khoản,</Text>
         <Text style={styles.subtitle}>
-          Please type full information below and we will create your account
+          Vui lòng nhập đầy đủ thông tin bên dưới và chúng tôi sẽ tạo tài khoản cho bạn
         </Text>
       </View>
 
@@ -198,6 +198,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
           value={mobile}
           onChangeText={setMobile}
         />
+        
         {errors.mobile ? (
           <Text style={styles.errorText}>{errors.mobile}</Text>
         ) : null}
@@ -214,28 +215,28 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
         ) : null}
 
         <Text style={styles.termsText}>
-          By signing up you agree to our{' '}
-          <Text style={styles.termsLink}>Terms of Use and Privacy Notice</Text>
+          Bằng cách đăng ký, bạn đồng ý với{' '}
+          <Text style={styles.termsLink}>Điều khoản sử dụng và Chính sách bảo mật</Text>
         </Text>
 
-        <CustomButton title="Join Now" onPress={handleSignup} primary />
+        <CustomButton title="Đăng ký" onPress={handleSignup} primary />
 
         <View style={styles.orContainer}>
           <View style={styles.divider} />
-          <Text style={styles.orText}>or</Text>
+          <Text style={styles.orText}>hoặc</Text>
           <View style={styles.divider} />
         </View>
 
         <SocialButton
-          title="Sign In with Google"
+          title="Đăng nhập bằng Google"
           icon="google"
           onPress={handleGoogleSignIn}
         />
 
         <View style={styles.bottomTextContainer}>
-          <Text style={styles.bottomText}>Already have an account? </Text>
+          <Text style={styles.bottomText}>Đã có tài khoản? </Text>
           <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
-            <Text style={styles.signInText}>Sign In</Text>
+            <Text style={styles.signInText}>Đăng nhập</Text>
           </TouchableOpacity>
         </View>
       </View>

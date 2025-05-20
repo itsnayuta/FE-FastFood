@@ -211,9 +211,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Welcome back,</Text>
+        <Text style={styles.title}>Chào mừng bạn quay trở lại,</Text>
         <Text style={styles.subtitle}>
-          Glad to meet you again! Please login to use the app.
+          Rất vui vì được gặp lại bạn! Hãy đăng nhập để sử dụng app.
         </Text>
       </View>
 
@@ -239,11 +239,11 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
         ) : null}
 
         <TouchableOpacity style={styles.forgotPassword}>
-          <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+          <Text style={styles.forgotPasswordText}>Quên mật khẩu?</Text>
         </TouchableOpacity>
 
         <CustomButton
-          title={loading ? 'Signing in...' : 'Sign In'}
+          title={loading ? 'Đăng nhập...' : 'Đăng nhập'}
           onPress={handleEmailPasswordLogin}
           primary
           disabled={loading}
@@ -251,20 +251,20 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
 
         <View style={styles.orContainer}>
           <View style={styles.divider} />
-          <Text style={styles.orText}>or</Text>
+          <Text style={styles.orText}>hoặc</Text>
           <View style={styles.divider} />
         </View>
 
         <SocialButton
-          title="Sign In with Google"
+          title="Đăng nhập bằng Google"
           icon="google"
           onPress={handleGoogleSignIn}
         />
 
         <View style={styles.bottomTextContainer}>
-          <Text style={styles.bottomText}>Don't have an account? </Text>
+          <Text style={styles.bottomText}>Chưa có tài khoản? </Text>
           <TouchableOpacity onPress={() => navigation.navigate('SignupScreen')}>
-            <Text style={styles.joinNowText}>Join Now</Text>
+            <Text style={styles.joinNowText}>Đăng ký</Text>
           </TouchableOpacity>
         </View>
       </View>
