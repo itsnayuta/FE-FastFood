@@ -32,3 +32,9 @@ export interface ProductInCombo {
     comboId: number,
     quantity: number
 }
+export interface FoodItem {
+    id: number;
+    name: string;
+    price: number;
+    quality: number;
+}
