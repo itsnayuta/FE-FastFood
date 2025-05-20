@@ -132,7 +132,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
   };
 
   const sendIdTokenToBackend = async (idToken: string, password?: string) => {
-    const apiUrl = `${Config.API_BASE_URL}/api/auth/login`;
+    const apiUrl = `${Config.API_BASE_URL}/auth/login`;
     try {
       console.log('[Backend Request] URL:', apiUrl);
       // Log token length and first/last few characters for debugging
