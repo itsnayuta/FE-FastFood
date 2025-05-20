@@ -28,8 +28,8 @@ interface CustomCheckBoxProps {
 
 const CustomCheckBox: React.FC<CustomCheckBoxProps> = ({ value, onValueChange }) => {
   return (
-    <TouchableOpacity 
-      style={styles.checkboxContainer} 
+    <TouchableOpacity
+      style={styles.checkboxContainer}
       onPress={() => onValueChange(!value)}
     >
       <View style={[styles.checkbox, value && styles.checkboxSelected]}>
@@ -42,9 +42,9 @@ const CustomCheckBox: React.FC<CustomCheckBoxProps> = ({ value, onValueChange })
 const PaymentScreen: React.FC = () => {
   const navigation = useNavigation<PaymentScreenNavigationProp>();
   const route = useRoute<PaymentScreenRouteProp>();
-  
+
   const { foodItems, totalPrice, voucher } = route.params || { foodItems: [], totalPrice: 0, voucher: null };
-  
+
   // State for form inputs
   const [formData, setFormData] = useState({
     houseNumber: '',
@@ -65,105 +65,105 @@ const PaymentScreen: React.FC = () => {
   const [error, setError] = useState<{ [key: string]: string }>({});
 
 
-  
+
   const handleInputChange = (field: keyof typeof formData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
 
   const handlePayment = async () => {
-  let newErrors: { [key: string]: string } = {};
+    let newErrors: { [key: string]: string } = {};
 
-  if (!formData.lastName.trim()) newErrors.lastName = "Vui lòng nhập họ.";
-  if (!formData.firstName.trim()) newErrors.firstName = "Vui lòng nhập tên.";
-  if (!formData.phoneNumber.trim()) newErrors.phoneNumber = "Vui lòng nhập số điện thoại.";
-  if (!formData.email.trim()) newErrors.email = "Vui lòng nhập email.";
-  if (!formData.streetName.trim()) newErrors.streetName = "Vui lòng nhập tên đường.";
-  if (!formData.ward.trim()) newErrors.ward = "Vui lòng nhập Phường/Xã.";
+    if (!formData.lastName.trim()) newErrors.lastName = "Vui lòng nhập họ.";
+    if (!formData.firstName.trim()) newErrors.firstName = "Vui lòng nhập tên.";
+    if (!formData.phoneNumber.trim()) newErrors.phoneNumber = "Vui lòng nhập số điện thoại.";
+    if (!formData.email.trim()) newErrors.email = "Vui lòng nhập email.";
+    if (!formData.streetName.trim()) newErrors.streetName = "Vui lòng nhập tên đường.";
+    if (!formData.ward.trim()) newErrors.ward = "Vui lòng nhập Phường/Xã.";
 
-  if (Object.keys(newErrors).length > 0) {
-    setError(newErrors);
-    return;
-  }
-
-  setError({});
-
-  const memberId = 1;
-
-  const bill = {
-    memberId: memberId,
-    paymentMethod: selectedMethod === "cod" ? "CASH" : "VNPAY",
-    discount: 0,
-    totalPayment: totalPrice - voucherDiscount,
-    tax: 0,
-    paymentStatus: "PENDING", 
-    voucher: null, 
-  };
-
-  try {
-    const response = await fetch('http://192.168.41.104:8080/api/payments/process', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(bill),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      Alert.alert("Lỗi", `Lỗi từ server: ${errorText}`);
+    if (Object.keys(newErrors).length > 0) {
+      setError(newErrors);
       return;
     }
 
-    const responseText = await response.text();
-    let responseData;
-    
-    try {
-      responseData = JSON.parse(responseText);
-    } catch (e) {
-      // If response is not JSON, treat it as payment URL for VNPAY
-      responseData = { paymentUrl: responseText };
-    }
+    setError({});
 
-    // Navigate to OrderSuccess screen directly
-    navigation.navigate("OrderSuccess", {
-      orderId: "ORDER" + responseData.id,
-      storeName: "FastFood Hà Đông",
-      storeAddress: "Gian hàng số 8, Tầng 1, Học viện PTIT, P.Mộ Lao, Q.Hà Đông, Tp Hà Nội",
-      storePhone: "1900 1234",
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      houseNumber: formData.houseNumber,
-      streetName: formData.streetName,
-      ward: formData.ward,
-      phoneNumber: formData.phoneNumber,
-      email: formData.email,
-      totalPayment: totalPrice - voucherDiscount,
+    const memberId = 1;
+
+    const bill = {
+      memberId: memberId,
       paymentMethod: selectedMethod === "cod" ? "CASH" : "VNPAY",
-      note: formData.note,
-      orderItems: foodItems,
-      subtotal: totalPrice,
-      deliveryFee: shippingFee,
-      voucher: voucher
-    });
+      discount: 0,
+      totalPayment: totalPrice - voucherDiscount,
+      tax: 0,
+      paymentStatus: "PENDING",
+      voucher: null,
+    };
 
-    // If VNPAY, open payment URL after navigation
-    if (selectedMethod === "vnpay" && responseData.paymentUrl) {
-      Linking.openURL(responseData.paymentUrl);
+    try {
+      const response = await fetch('http://192.168.1.9:8080/api/payments/process', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bill),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        Alert.alert("Lỗi", `Lỗi từ server: ${errorText}`);
+        return;
+      }
+
+      const responseText = await response.text();
+      let responseData;
+
+      try {
+        responseData = JSON.parse(responseText);
+      } catch (e) {
+        // If response is not JSON, treat it as payment URL for VNPAY
+        responseData = { paymentUrl: responseText };
+      }
+
+      // Navigate to OrderSuccess screen directly
+      navigation.navigate("OrderSuccess", {
+        orderId: "ORDER" + responseData.id,
+        storeName: "FastFood Hà Đông",
+        storeAddress: "Gian hàng số 8, Tầng 1, Học viện PTIT, P.Mộ Lao, Q.Hà Đông, Tp Hà Nội",
+        storePhone: "1900 1234",
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        houseNumber: formData.houseNumber,
+        streetName: formData.streetName,
+        ward: formData.ward,
+        phoneNumber: formData.phoneNumber,
+        email: formData.email,
+        totalPayment: totalPrice - voucherDiscount,
+        paymentMethod: selectedMethod === "cod" ? "CASH" : "VNPAY",
+        note: formData.note,
+        orderItems: foodItems,
+        subtotal: totalPrice,
+        deliveryFee: shippingFee,
+        voucher: voucher
+      });
+
+      // If VNPAY, open payment URL after navigation
+      if (selectedMethod === "vnpay" && responseData.paymentUrl) {
+        Linking.openURL(responseData.paymentUrl);
+      }
+    } catch (error: any) {
+      Alert.alert("Lỗi", "Không thể kết nối tới máy chủ!\n" + error?.message);
     }
-  } catch (error: any) {
-  Alert.alert("Lỗi", "Không thể kết nối tới máy chủ!\n" + error?.message);
-}
-};
-  
+  };
+
 
   const icons = {
     cod: require("../assets/icons/cod_icon.png"),
     vnpay: require("../assets/icons/zalopay_icon.png"),
   };
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -173,7 +173,7 @@ const PaymentScreen: React.FC = () => {
           <TouchableOpacity style={styles.changeButton}>
             <Text style={styles.changeButtonText}>Thay đổi</Text>
           </TouchableOpacity>
-          
+
         </View>
 
         {/* Title */}
@@ -204,14 +204,14 @@ const PaymentScreen: React.FC = () => {
             { key: 'streetName', label: 'Tên đường*', placeholder: 'Nhập tên đường' },
             { key: 'ward', label: 'Phường/ Xã*', placeholder: 'Nhập phường/xã' },
             { key: 'note', label: 'Ghi chú cho đơn hàng', placeholder: 'Nhập ghi chú (nếu có)' },
-          ].map(({ key, label, placeholder}) => (
+          ].map(({ key, label, placeholder }) => (
             <View key={key} style={styles.inputBox}>
               <Text style={styles.label}>{label}</Text>
-              <TextInput 
-                style={[styles.input, error[key] && styles.inputError]} 
-                placeholder={placeholder} 
-                value={formData[key as keyof typeof formData]} 
-                onChangeText={(value) => handleInputChange(key as keyof typeof formData, value)} 
+              <TextInput
+                style={[styles.input, error[key] && styles.inputError]}
+                placeholder={placeholder}
+                value={formData[key as keyof typeof formData]}
+                onChangeText={(value) => handleInputChange(key as keyof typeof formData, value)}
               />
               {error[key] && <Text style={styles.errorText}>{error[key]}</Text>}
             </View>
@@ -229,12 +229,12 @@ const PaymentScreen: React.FC = () => {
           ].map(({ key, label, placeholder, keyboardType }) => (
             <View key={key} style={styles.inputBox}>
               <Text style={styles.label}>{label}</Text>
-              <TextInput 
-                style={[styles.input, error[key] && styles.inputError]} 
-                placeholder={placeholder} 
-                keyboardType={keyboardType as any} 
-                value={formData[key as keyof typeof formData]} 
-                onChangeText={(value) => handleInputChange(key as keyof typeof formData, value)} 
+              <TextInput
+                style={[styles.input, error[key] && styles.inputError]}
+                placeholder={placeholder}
+                keyboardType={keyboardType as any}
+                value={formData[key as keyof typeof formData]}
+                onChangeText={(value) => handleInputChange(key as keyof typeof formData, value)}
               />
               {error[key] && <Text style={styles.errorText}>{error[key]}</Text>}
             </View>
@@ -244,27 +244,27 @@ const PaymentScreen: React.FC = () => {
 
         {/* Payment Methods */}
         <View style={styles.infoBox}>
-          <Text style={styles.label}>PHƯƠNG THỨC THANH TOÁN:</Text> 
+          <Text style={styles.label}>PHƯƠNG THỨC THANH TOÁN:</Text>
           {[
             { method: 'cod', label: 'Thanh toán khi nhận hàng' },
             { method: 'vnpay', label: 'Thanh toán bằng QR ZaloPay' },
           ].map(({ method, label }) => (
-            <TouchableOpacity 
+            <TouchableOpacity
               key={method}
               style={[
-                styles.paymentOption, 
+                styles.paymentOption,
                 selectedMethod === method && styles.selected
               ]}
               onPress={() => setSelectedMethod(method as 'cod' | 'vnpay')}
             >
               <Text style={[
-                styles.paymentText, 
+                styles.paymentText,
                 selectedMethod === method && styles.selectedText
               ]}>
                 {label}
               </Text>
-              <Image 
-                source={icons[method as 'cod' | 'vnpay']} 
+              <Image
+                source={icons[method as 'cod' | 'vnpay']}
                 style={styles.icon}
               />
             </TouchableOpacity>
@@ -282,8 +282,8 @@ const PaymentScreen: React.FC = () => {
         </View>
 
         {/* Payment Button */}
-        <TouchableOpacity 
-          style={[styles.paymentButton, !agreePolicy && styles.paymentButtonDisabled]} 
+        <TouchableOpacity
+          style={[styles.paymentButton, !agreePolicy && styles.paymentButtonDisabled]}
           onPress={handlePayment}
           disabled={!agreePolicy}
         >
@@ -293,20 +293,20 @@ const PaymentScreen: React.FC = () => {
         {/* Order Summary */}
         <View style={styles.infoBox}>
           <Text style={styles.label}>TÓM TẮT ĐƠN HÀNG:</Text>
-            {foodItems.length > 0 ? (
-              foodItems.map((item, index) => (
-                <View key={index} style={styles.foodItem}>
-                  <Text style={styles.foodText}>
-                    {item.quality}x {item.name}
-                  </Text>
-                  <Text style={styles.foodPrice}>
-                    {(item.price * item.quality).toLocaleString()} VND
-                  </Text>
-                </View>
-              ))
-            ) : (
-              <Text style={styles.emptyText}>Không có món ăn nào trong giỏ hàng.</Text>
-            )}
+          {foodItems.length > 0 ? (
+            foodItems.map((item, index) => (
+              <View key={index} style={styles.foodItem}>
+                <Text style={styles.foodText}>
+                  {item.quality}x {item.name}
+                </Text>
+                <Text style={styles.foodPrice}>
+                  {(item.price * item.quality).toLocaleString()} VND
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.emptyText}>Không có món ăn nào trong giỏ hàng.</Text>
+          )}
 
           <View style={styles.divider} />
 
@@ -525,17 +525,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   paymentButton: {
-    backgroundColor: "#52ed05", 
+    backgroundColor: "#52ed05",
     paddingVertical: 15,
     marginHorizontal: 20,
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 20,
-    marginTop:20,
+    marginTop: 20,
   },
   paymentButtonDisabled: {
-    backgroundColor: "#ffcc99", 
+    backgroundColor: "#ffcc99",
   },
   paymentButtonText: {
     color: "#fff", // chữ trắng

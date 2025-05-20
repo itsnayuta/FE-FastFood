@@ -67,18 +67,18 @@ export type RootStackParamList = {
         phoneNumber?: string;
         email?: string;
         // Payment information
-        subtotal?: number;      
-        deliveryFee?: number;  
-        voucher?: {           
+        subtotal?: number;
+        deliveryFee?: number;
+        voucher?: {
             code: string;
             discount: number;
         };
-        totalPayment?: number;  
+        totalPayment?: number;
         paymentMethod?: string;
         note?: string;
         estimatedDeliveryMin?: string;
         estimatedDeliveryMax?: string;
-        
+
         orderItems?: FoodItem[];
     };
     OrderSuccess: {
@@ -86,7 +86,7 @@ export type RootStackParamList = {
         storeName?: string;
         storeAddress?: string;
         storePhone?: string;
-      
+
         firstName?: string;
         lastName?: string;
         houseNumber?: string;
@@ -96,24 +96,24 @@ export type RootStackParamList = {
         address?: string;
         phoneNumber?: string;
         email?: string;
-       
-        subtotal?: number;     
-        deliveryFee?: number;   
-        voucher?: {           
+
+        subtotal?: number;
+        deliveryFee?: number;
+        voucher?: {
             code: string;
             discount: number;
         };
-        totalPayment?: number; 
+        totalPayment?: number;
         paymentMethod?: string;
         note?: string;
         estimatedDeliveryMin?: string;
         estimatedDeliveryMax?: string;
-       
+
         orderItems?: FoodItem[];
     };
     LoginScreen: undefined;
     SignupScreen: undefined;
-   
+
 
 };
 
@@ -124,3 +124,8 @@ export interface CartItem {
     imageUrl: string;
     quality: number;
 }
+
+export type RootParamList = {
+    AdminRoot: undefined;
+    MainRoot: undefined;
+};

@@ -11,9 +11,17 @@ export type AuthUser = {
   role: string;
 };
 
+// Nếu trước đây bạn dùng firebase để lưu user, token,... thì có thể comment lại phần đó bên dưới
+
 export const authStorage = {
   async storeTokens(accessToken: string, refreshToken: string, user: AuthUser): Promise<void> {
     try {
+      // Nếu trước đây bạn dùng firebase để lưu token, user thì comment hoặc xóa đoạn này
+      /*
+      // firebase lưu token user sample (comment lại)
+      await firebase.auth().currentUser.getIdToken(true);
+      */
+
       await AsyncStorage.multiSet([
         [ACCESS_TOKEN_KEY, accessToken],
         [REFRESH_TOKEN_KEY, refreshToken],
