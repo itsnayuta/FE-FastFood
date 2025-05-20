@@ -95,24 +95,24 @@ const CartScreen = () => {
             foodItems: foodItem,
             totalPrice: finalTotal,
             voucher: appliedVoucher
-                ? { code: appliedVoucher.code, discount: appliedVoucher.discount }
+                ? { id: appliedVoucher.id, code: appliedVoucher.code, discount: appliedVoucher.discount }
                 : undefined,
         });
     };
 
-     const handleQuantityChange = (id: number, type: 'increase' | 'decrease') => {
+    const handleQuantityChange = (id: number, type: 'increase' | 'decrease') => {
         setFoodItem(prev =>
             prev.map(item =>
                 item.id === id
-                    ? {
-                          ...item,
-                          quality:
-                              type === 'increase'
-                                  ? item.quality + 1
-                                  : item.quality > 1
-                                  ? item.quality - 1
-                                  : 1,
-                      }
+                ? {
+                        ...item,
+                        quality:
+                            type === 'increase'
+                                ? item.quality + 1
+                                : item.quality > 1
+                                ? item.quality - 1
+                                : 1,
+                    }
                     : item
             )
         );
@@ -161,7 +161,7 @@ const CartScreen = () => {
                         Giỏ hàng của bạn đang trống.
                     </Text>
                     <TouchableOpacity onPress={() => navigation.navigate('Home' as any)}>
-                         <Text style={style.browseProductsLink}>Xem sản phẩm</Text>
+                        <Text style={style.browseProductsLink}>Xem sản phẩm</Text>
                     </TouchableOpacity>
                 </View>
             ) : (
