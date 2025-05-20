@@ -40,16 +40,19 @@ export interface FoodItem {
     quality: number;
 }
 
+export interface Voucher {
+    id: number;
+    code: string;
+    discount: number;
+}
+
 export type RootStackParamList = {
     Home: undefined;
     Cart: undefined;
     Payment: {
         foodItems: FoodItem[];
         totalPrice: number;
-        voucher?: {
-            code: string;
-            discount: number;
-        };
+        voucher?: Voucher;
     };
     ProcessingOrder: {
         orderId?: string;
