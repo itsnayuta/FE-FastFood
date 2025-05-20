@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, TextInput, TouchableOpacity, Text, KeyboardTypeOptions } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 interface CustomInputProps {
   placeholder: string;
@@ -27,13 +27,13 @@ const CustomInput: React.FC<CustomInputProps> = ({
   return (
     <View style={[styles.container, isFocused && styles.focusedContainer]}>
       {iconName && (
-        <Icon name={iconName} size={20} color="#666" style={styles.icon} />
+        <Ionicons name={iconName} size={20} color="#666" style={styles.icon} />
       )}
       
       {countryCode && (
         <View style={styles.countryCodeContainer}>
           <Text style={styles.countryCode}>{countryCode}</Text>
-          <Icon name="chevron-down" size={16} color="#666" />
+          <Ionicons name="chevron-down" size={16} color="#666" />
         </View>
       )}
       
@@ -54,7 +54,7 @@ const CustomInput: React.FC<CustomInputProps> = ({
           style={styles.eyeIcon}
           onPress={() => setIsPasswordVisible(!isPasswordVisible)}
         >
-          <Icon
+          <Ionicons
             name={isPasswordVisible ? 'eye-outline' : 'eye-off-outline'}
             size={20}
             color="#666"

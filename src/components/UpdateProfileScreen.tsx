@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import CustomButton from './CustomButton';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { ParamListBase } from '@react-navigation/native';
 import { launchImageLibrary } from 'react-native-image-picker';
+import { userService, UserProfile } from '../services/userService';
 
 // Mock initial user data (replace with real data as needed)
 const initialUser = {
@@ -18,40 +19,128 @@ type UpdateProfileScreenProps = {
 };
 
 const UpdateProfileScreen: React.FC<UpdateProfileScreenProps> = ({ navigation }) => {
-  const [displayName, setDisplayName] = useState(initialUser.displayName);
-  const [email, setEmail] = useState(initialUser.email);
-  const [phoneNumber, setPhoneNumber] = useState(initialUser.phoneNumber);
-  const [picture, setPicture] = useState(initialUser.picture);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [displayName, setDisplayName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [picture, setPicture] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleImagePick = () => {
-    launchImageLibrary({
-      mediaType: 'photo',
-      quality: 0.8,
-      maxWidth: 500,
-      maxHeight: 500,
-    }, (response) => {
-      if (response.didCancel) {
-        console.log('User cancelled image picker');
-      } else if (response.errorCode) {
-        Alert.alert('Error', 'Failed to pick image');
-      } else if (response.assets && response.assets[0]?.uri) {
-        setPicture(response.assets[0].uri);
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const userData = await userService.getUserProfile();
+      setUser(userData);
+      setDisplayName(userData.displayName);
+      setEmail(userData.email);
+      setPhoneNumber(userData.phoneNumber);
+      setPicture(userData.picture);
+    } catch (err) {
+      setError('Failed to load profile. Please try again.');
+      Alert.alert('Error', 'Failed to load profile. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImagePick = async () => {
+    try {
+      const result = await launchImageLibrary({
+        mediaType: 'photo',
+        quality: 0.8,
+        maxWidth: 500,
+        maxHeight: 500,
+      });
+
+      if (result.didCancel) {
+        return;
       }
-    });
+
+      if (result.errorCode) {
+        Alert.alert('Error', 'Failed to pick image');
+        return;
+      }
+
+      if (result.assets && result.assets[0]?.uri) {
+        setSaving(true);
+        try {
+          const pictureUrl = await userService.uploadProfilePicture(result.assets[0].uri);
+          setPicture(pictureUrl);
+        } catch (err) {
+          Alert.alert('Error', 'Failed to upload image. Please try again.');
+        } finally {
+          setSaving(false);
+        }
+      }
+    } catch (err) {
+      Alert.alert('Error', 'Failed to pick image');
+    }
   };
 
-  const handleSave = () => {
-    // TODO: Integrate with backend
-    navigation.goBack();
+  const handleSave = async () => {
+    if (!user) return;
+
+    try {
+      setSaving(true);
+      setError(null);
+      const updatedUser = await userService.updateUserProfile({
+        displayName,
+        email,
+        phoneNumber,
+        picture,
+      });
+
+      Alert.alert('Success', 'Profile updated successfully', [
+        {
+          text: 'OK',
+          onPress: () => navigation.goBack(),
+        },
+      ]);
+    } catch (err) {
+      setError('Failed to update profile. Please try again.');
+      Alert.alert('Error', 'Failed to update profile. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#a51c30" />
+      </View>
+    );
+  }
+
+  if (error || !user) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>{error || 'Failed to load profile'}</Text>
+        <CustomButton title="Retry" onPress={fetchUserProfile} primary />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Edit Profile</Text>
-      <TouchableOpacity style={styles.imageContainer} onPress={handleImagePick}>
+      <TouchableOpacity 
+        style={styles.imageContainer} 
+        onPress={handleImagePick}
+        disabled={saving}
+      >
         <Image source={{ uri: picture }} style={styles.profileImage} />
         <View style={styles.imageOverlay}>
-          <Text style={styles.changePhotoText}>Change Photo</Text>
+          <Text style={styles.changePhotoText}>
+            {saving ? 'Uploading...' : 'Change Photo'}
+          </Text>
         </View>
       </TouchableOpacity>
       <TextInput
@@ -59,6 +148,7 @@ const UpdateProfileScreen: React.FC<UpdateProfileScreenProps> = ({ navigation })
         placeholder="Display Name"
         value={displayName}
         onChangeText={setDisplayName}
+        editable={!saving}
       />
       <TextInput
         style={styles.input}
@@ -67,6 +157,7 @@ const UpdateProfileScreen: React.FC<UpdateProfileScreenProps> = ({ navigation })
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
+        editable={!saving}
       />
       <TextInput
         style={styles.input}
@@ -74,9 +165,19 @@ const UpdateProfileScreen: React.FC<UpdateProfileScreenProps> = ({ navigation })
         value={phoneNumber}
         onChangeText={setPhoneNumber}
         keyboardType="phone-pad"
+        editable={!saving}
       />
-      <CustomButton title="Save" onPress={handleSave} primary />
-      <CustomButton title="Cancel" onPress={() => navigation.goBack()} />
+      <CustomButton 
+        title={saving ? "Saving..." : "Save"} 
+        onPress={handleSave} 
+        primary 
+        disabled={saving}
+      />
+      <CustomButton 
+        title="Cancel" 
+        onPress={() => navigation.goBack()} 
+        disabled={saving}
+      />
     </View>
   );
 };
@@ -127,6 +228,25 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     fontSize: 16,
     backgroundColor: '#FAFAFA',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+    backgroundColor: '#fff',
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 16,
+    textAlign: 'center',
   },
 });
 

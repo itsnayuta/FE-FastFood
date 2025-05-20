@@ -1,42 +1,83 @@
-import React from 'react';
-import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import CustomButton from './CustomButton';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { ParamListBase } from '@react-navigation/native';
 import OrderHistory from './OrderHistory';
+import { userService, UserProfile } from '../services/userService';
+import Config from 'react-native-config';
+import api from '../utils/api';
 
 type ProfileScreenProps = {
   navigation: StackNavigationProp<ParamListBase>;
 };
 
-const mockUser = {
-  displayName: 'John Doe',
-  email: 'johndoe@example.com',
-  phoneNumber: '+1 234 567 890',
-  picture: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
-  role: 'USER',
-};
-
 const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchUserProfile = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+  
+      const userData = await userService.getUserProfile();
+  
+      if (userData.picture?.startsWith("/uploads/")) {
+        const filename = userData.picture.replace("/uploads/", "");
+        userData.picture = `${Config.API_BASE_URL}/uploads/${filename}`;
+      }
+  
+      setUser(userData);
+    } catch (err) {
+      setError('Failed to load profile. Please try again.');
+      Alert.alert('Error', 'Failed to load profile. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
   const handleOrderPress = (orderId: string) => {
     // TODO: Navigate to order details
     console.log('Order pressed:', orderId);
   };
 
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#a51c30" />
+      </View>
+    );
+  }
+
+  if (error || !user) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>{error || 'Failed to load profile'}</Text>
+        <CustomButton title="Retry" onPress={fetchUserProfile} primary />
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         <View style={styles.profileSection}>
-          <Image source={{ uri: mockUser.picture }} style={styles.profileImage} />
+          <Image source={{ uri: user.picture }} style={styles.profileImage} />
           <View style={styles.profileInfo}>
-            <Text style={styles.userName}>{mockUser.displayName}</Text>
-            <Text style={styles.userEmail}>{mockUser.email}</Text>
+            <Text style={styles.userName}>{user.displayName}</Text>
+            <Text style={styles.userEmail}>{user.email}</Text>
             <View style={styles.roleBadge}>
-              <Text style={styles.roleText}>{mockUser.role}</Text>
+              <Text style={styles.roleText}>{user.role}</Text>
             </View>
           </View>
         </View>
-        
+
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
             <Text style={styles.statNumber}>12</Text>
@@ -55,14 +96,14 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
         </View>
 
         <View style={styles.actionButtons}>
-          <CustomButton 
-            title="Edit Profile" 
-            onPress={() => navigation.navigate('UpdateProfileScreen')} 
-            primary 
+          <CustomButton
+            title="Edit Profile"
+            onPress={() => navigation.navigate('UpdateProfileScreen')}
+            primary
           />
-          <CustomButton 
-            title="Settings" 
-            onPress={() => {}} 
+          <CustomButton
+            title="Settings"
+            onPress={() => { }}
           />
         </View>
       </View>
@@ -70,7 +111,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Recent Orders</Text>
-          <TouchableOpacity onPress={() => {}}>
+          <TouchableOpacity onPress={() => { }}>
             <Text style={styles.seeAllText}>See All</Text>
           </TouchableOpacity>
         </View>
@@ -185,6 +226,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#a51c30',
     fontWeight: '600',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+    backgroundColor: '#f8f9fa',
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 16,
+    textAlign: 'center',
   },
 });
 
