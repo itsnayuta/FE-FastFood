@@ -40,13 +40,79 @@ export interface FoodItem {
 }
 
 export type RootStackParamList = {
+    Home: undefined;
     Cart: undefined;
     Payment: {
         foodItems: FoodItem[];
         totalPrice: number;
+        voucher?: {
+            code: string;
+            discount: number;
+        };
     };
-    ProcessingOrder: undefined;
-    OrderSuccess: undefined; 
+    ProcessingOrder: {
+        orderId?: string;
+        storeName?: string;
+        storeAddress?: string;
+        storePhone?: string;
+        // Customer information
+        firstName?: string;
+        lastName?: string;
+        houseNumber?: string;
+        streetName?: string;
+        ward?: string;
+        customerName?: string;
+        address?: string;
+        phoneNumber?: string;
+        email?: string;
+        // Payment information
+        subtotal?: number;      // Tổng tiền hàng
+        deliveryFee?: number;   // Phí giao hàng
+        voucher?: {            // Thông tin voucher
+            code: string;
+            discount: number;
+        };
+        totalPayment?: number;  // Tổng tiền phải trả (subtotal + deliveryFee - voucher.discount)
+        paymentMethod?: string;
+        note?: string;
+        estimatedDeliveryMin?: string;
+        estimatedDeliveryMax?: string;
+        // Order items information
+        orderItems?: FoodItem[];
+    };
+    OrderSuccess: {
+        orderId?: string;
+        storeName?: string;
+        storeAddress?: string;
+        storePhone?: string;
+        // Customer information
+        firstName?: string;
+        lastName?: string;
+        houseNumber?: string;
+        streetName?: string;
+        ward?: string;
+        customerName?: string;
+        address?: string;
+        phoneNumber?: string;
+        email?: string;
+        // Payment information
+        subtotal?: number;      // Tổng tiền hàng
+        deliveryFee?: number;   // Phí giao hàng
+        voucher?: {            // Thông tin voucher
+            code: string;
+            discount: number;
+        };
+        totalPayment?: number;  // Tổng tiền phải trả (subtotal + deliveryFee - voucher.discount)
+        paymentMethod?: string;
+        note?: string;
+        estimatedDeliveryMin?: string;
+        estimatedDeliveryMax?: string;
+        // Order items information
+        orderItems?: FoodItem[];
+    };
+    LoginScreen: undefined;
+    SignupScreen: undefined;
+    // Add other routes here if they exist
 };
 
 export interface CartItem {

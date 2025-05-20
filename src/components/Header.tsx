@@ -1,10 +1,15 @@
 import { useNavigation } from "@react-navigation/native";
+import type { StackNavigationProp } from "@react-navigation/stack";
 import React from "react";
 import { View, StyleSheet, TouchableOpacity, Image } from "react-native";
 
+type RootStackParamList = {
+    ProfileScreen: undefined;
+    // add other screens here if needed
+};
 
 const Header = () => {
-    const navigation = useNavigation();
+    const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
     return (
         <View style={styles.container}>
             {/* Logo KFC bên trái */}

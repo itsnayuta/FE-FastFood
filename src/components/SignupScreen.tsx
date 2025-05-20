@@ -45,7 +45,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
   };
 
   const sendIdTokenToBackend = async (idToken: string, name?: string, phoneNumber?: string, password?: string) => {
-    const apiUrl = `${Config.API_BASE_URL}/api/auth/login`;
+    const apiUrl = `${Config.API_BASE_URL}/auth/login`;
     try {
       const response = await axios.post(
         apiUrl,
