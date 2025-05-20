@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRoute } from '@react-navigation/native';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../types';
@@ -15,15 +15,17 @@ import {
   Platform,
   Image,
   Alert,
+  Linking,
 } from 'react-native';
+
+type PaymentScreenRouteProp = RouteProp<RootStackParamList, "Payment">;
+type PaymentScreenNavigationProp = StackNavigationProp<RootStackParamList, "Payment">;
 
 interface CustomCheckBoxProps {
   value: boolean;
   onValueChange: (newValue: boolean) => void;
 }
 
-type PaymentScreenRouteProp = RouteProp<RootStackParamList, "Payment">;
-type PaymentScreenNavigationProp = StackNavigationProp<RootStackParamList, "Payment">;
 const CustomCheckBox: React.FC<CustomCheckBoxProps> = ({ value, onValueChange }) => {
   return (
     <TouchableOpacity 
@@ -38,11 +40,10 @@ const CustomCheckBox: React.FC<CustomCheckBoxProps> = ({ value, onValueChange })
 };
 
 const PaymentScreen: React.FC = () => {
-  const navigation = useNavigation();
-
-  // ...
-  const route = useRoute<PaymentScreenRouteProp>(); 
-  const { foodItems, totalPrice } = route.params || { foodItems: [], totalPrice: 0 };
+  const navigation = useNavigation<PaymentScreenNavigationProp>();
+  const route = useRoute<PaymentScreenRouteProp>();
+  
+  const { foodItems, totalPrice, voucher } = route.params || { foodItems: [], totalPrice: 0, voucher: null };
   
   // State for form inputs
   const [formData, setFormData] = useState({
@@ -56,9 +57,10 @@ const PaymentScreen: React.FC = () => {
     email: '',
   });
 
-  const [selectedMethod, setSelectedMethod] = useState<'cod' | 'zalopay'>('cod');
+  const [selectedMethod, setSelectedMethod] = useState<'cod' | 'vnpay'>('cod');
   const [agreePolicy, setAgreePolicy] = useState(false);
-  const shippingFee = 10000 // Shipping Free
+  const shippingFee = 10000; // Shipping Fee
+  const voucherDiscount = voucher?.discount || 0;
 
   const [error, setError] = useState<{ [key: string]: string }>({});
 
@@ -90,16 +92,16 @@ const PaymentScreen: React.FC = () => {
 
   const bill = {
     memberId: memberId,
-    paymentMethod: selectedMethod,
+    paymentMethod: selectedMethod === "cod" ? "CASH" : "VNPAY",
     discount: 0,
-    totalPayment: totalPrice + shippingFee,
+    totalPayment: totalPrice - voucherDiscount,
     tax: 0,
     paymentStatus: "PENDING", 
     voucher: null, 
   };
 
   try {
-    const response = await fetch('http://192.168.41.104:8080/api/bills', {
+    const response = await fetch('http://192.168.41.104:8080/api/payments/process', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -107,20 +109,57 @@ const PaymentScreen: React.FC = () => {
       body: JSON.stringify(bill),
     });
 
-    if (response.ok) {
-      navigation.navigate("ProcessingOrder" as never);
-    } else {
-      Alert.alert("Lỗi", "Không thể gửi đơn hàng. Vui lòng thử lại!");
+    if (!response.ok) {
+      const errorText = await response.text();
+      Alert.alert("Lỗi", `Lỗi từ server: ${errorText}`);
+      return;
     }
-  } catch (error) {
-    Alert.alert("Lỗi", "Không thể kết nối tới máy chủ!");
-  }
+
+    const responseText = await response.text();
+    let responseData;
+    
+    try {
+      responseData = JSON.parse(responseText);
+    } catch (e) {
+      // If response is not JSON, treat it as payment URL for VNPAY
+      responseData = { paymentUrl: responseText };
+    }
+
+    // Navigate to OrderSuccess screen directly
+    navigation.navigate("OrderSuccess", {
+      orderId: "ORDER" + responseData.id,
+      storeName: "FastFood Hà Đông",
+      storeAddress: "Gian hàng số 8, Tầng 1, Học viện PTIT, P.Mộ Lao, Q.Hà Đông, Tp Hà Nội",
+      storePhone: "1900 1234",
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      houseNumber: formData.houseNumber,
+      streetName: formData.streetName,
+      ward: formData.ward,
+      phoneNumber: formData.phoneNumber,
+      email: formData.email,
+      totalPayment: totalPrice - voucherDiscount,
+      paymentMethod: selectedMethod === "cod" ? "CASH" : "VNPAY",
+      note: formData.note,
+      orderItems: foodItems,
+      subtotal: totalPrice,
+      deliveryFee: shippingFee,
+      voucher: voucher
+    });
+
+    // If VNPAY, open payment URL after navigation
+    if (selectedMethod === "vnpay" && responseData.paymentUrl) {
+      Linking.openURL(responseData.paymentUrl);
+    }
+  } catch (error: any) {
+  Alert.alert("Lỗi", "Không thể kết nối tới máy chủ!\n" + error?.message);
+}
 };
   
 
   const icons = {
     cod: require("../assets/icons/cod_icon.png"),
-    zalopay: require("../assets/icons/zalopay_icon.png"),
+    vnpay: require("../assets/icons/zalopay_icon.png"),
   };
   return (
     <KeyboardAvoidingView 
@@ -208,7 +247,7 @@ const PaymentScreen: React.FC = () => {
           <Text style={styles.label}>PHƯƠNG THỨC THANH TOÁN:</Text> 
           {[
             { method: 'cod', label: 'Thanh toán khi nhận hàng' },
-            { method: 'zalopay', label: 'Thanh toán bằng QR ZaloPay' },
+            { method: 'vnpay', label: 'Thanh toán bằng QR ZaloPay' },
           ].map(({ method, label }) => (
             <TouchableOpacity 
               key={method}
@@ -216,7 +255,7 @@ const PaymentScreen: React.FC = () => {
                 styles.paymentOption, 
                 selectedMethod === method && styles.selected
               ]}
-              onPress={() => setSelectedMethod(method as 'cod' | 'zalopay')}
+              onPress={() => setSelectedMethod(method as 'cod' | 'vnpay')}
             >
               <Text style={[
                 styles.paymentText, 
@@ -225,7 +264,7 @@ const PaymentScreen: React.FC = () => {
                 {label}
               </Text>
               <Image 
-                source={icons[method as 'cod' | 'zalopay']} 
+                source={icons[method as 'cod' | 'vnpay']} 
                 style={styles.icon}
               />
             </TouchableOpacity>
@@ -272,13 +311,17 @@ const PaymentScreen: React.FC = () => {
           <View style={styles.divider} />
 
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryText}>Tổng đơn hàng</Text>
-            <Text style={styles.summaryText}>{totalPrice.toLocaleString()} VND</Text>
+            <Text style={styles.summaryText}>Phí giao hàng</Text>
+            <Text style={styles.summaryText}>{shippingFee.toLocaleString()} VND</Text>
           </View>
 
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryText}>Phí giao hàng</Text>
-            <Text style={styles.summaryText}>{shippingFee.toLocaleString()} VND</Text>
+            <Text style={styles.summaryText}>
+              Mã giảm giá {voucher ? `(${voucher.code})` : ''}
+            </Text>
+            <Text style={[styles.summaryText, voucherDiscount > 0 && styles.discountText]}>
+              {voucherDiscount > 0 ? '-' : ''}{voucherDiscount.toLocaleString()} VND
+            </Text>
           </View>
 
           <View style={styles.divider} />
@@ -286,7 +329,7 @@ const PaymentScreen: React.FC = () => {
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Tổng thanh toán</Text>
             <Text style={styles.totalPrice}>
-              {(totalPrice + shippingFee).toLocaleString()} VND
+              {(totalPrice - voucherDiscount).toLocaleString()} VND
             </Text>
           </View>
         </View>
@@ -498,6 +541,9 @@ const styles = StyleSheet.create({
     color: "#fff", // chữ trắng
     fontSize: 16,
     fontWeight: "bold",
+  },
+  discountText: {
+    color: '#E74C3C',
   },
 });
 

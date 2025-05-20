@@ -41,13 +41,80 @@ export interface FoodItem {
 }
 
 export type RootStackParamList = {
+    Home: undefined;
     Cart: undefined;
     Payment: {
         foodItems: FoodItem[];
         totalPrice: number;
+        voucher?: {
+            code: string;
+            discount: number;
+        };
     };
-    ProcessingOrder: undefined;
-    OrderSuccess: undefined;
+    ProcessingOrder: {
+        orderId?: string;
+        storeName?: string;
+        storeAddress?: string;
+        storePhone?: string;
+        // Customer information
+        firstName?: string;
+        lastName?: string;
+        houseNumber?: string;
+        streetName?: string;
+        ward?: string;
+        customerName?: string;
+        address?: string;
+        phoneNumber?: string;
+        email?: string;
+        // Payment information
+        subtotal?: number;      
+        deliveryFee?: number;  
+        voucher?: {           
+            code: string;
+            discount: number;
+        };
+        totalPayment?: number;  
+        paymentMethod?: string;
+        note?: string;
+        estimatedDeliveryMin?: string;
+        estimatedDeliveryMax?: string;
+        
+        orderItems?: FoodItem[];
+    };
+    OrderSuccess: {
+        orderId?: string;
+        storeName?: string;
+        storeAddress?: string;
+        storePhone?: string;
+      
+        firstName?: string;
+        lastName?: string;
+        houseNumber?: string;
+        streetName?: string;
+        ward?: string;
+        customerName?: string;
+        address?: string;
+        phoneNumber?: string;
+        email?: string;
+       
+        subtotal?: number;     
+        deliveryFee?: number;   
+        voucher?: {           
+            code: string;
+            discount: number;
+        };
+        totalPayment?: number; 
+        paymentMethod?: string;
+        note?: string;
+        estimatedDeliveryMin?: string;
+        estimatedDeliveryMax?: string;
+       
+        orderItems?: FoodItem[];
+    };
+    LoginScreen: undefined;
+    SignupScreen: undefined;
+   
+
 };
 
 export interface CartItem {

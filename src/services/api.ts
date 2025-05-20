@@ -68,3 +68,13 @@ export const getComboByType = async (type: string) => {
     return [];
   }
 };
+
+export const validateVoucher = async (code: string) => {
+    try {
+        const response = await api.get(`/vouchers/code/${code}`);
+        return response.data;
+    } catch (error: any) {
+        console.warn('Voucher không tồn tại hoặc bị lỗi:', error?.message || error);
+        return null; // hoặc undefined, tùy bạn xử lý
+    }
+};
