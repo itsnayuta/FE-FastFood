@@ -7,7 +7,7 @@ import {
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RootStackParamList, CartItem } from '../types';
 import { getCart } from "../utils/cart";
-
+import { useFocusEffect } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 
@@ -15,11 +15,15 @@ const CartScreen = () => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const [foodItem, setFoodItem] = useState<CartItem[]>(getCart());
     const [coupon, setCoupon] = useState("");
-
+    useFocusEffect(
+        React.useCallback(() => {
+            setFoodItem(getCart());
+        }, [])
+    );
     const getTotalPrice = (items: CartItem[]) => {
         return items.reduce((sum, item) => sum + item.price * item.quality, 0);
     };
-
+console.log("foodItem", foodItem);
     const handlePayment = () => {
         const totalPrice = getTotalPrice(foodItem) + 10000;
         navigation.navigate('Payment', {
