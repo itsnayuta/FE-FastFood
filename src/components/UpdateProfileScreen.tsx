@@ -1,81 +1,82 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
-import CustomInput from './CustomInput';
+import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 import CustomButton from './CustomButton';
-import SocialButton from './SocialButton';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { ParamListBase } from '@react-navigation/native';
+import { launchImageLibrary } from 'react-native-image-picker';
 
-type ProfileScreenProps = {
+// Mock initial user data (replace with real data as needed)
+const initialUser = {
+  displayName: 'John Doe',
+  email: 'johndoe@example.com',
+  phoneNumber: '+1 234 567 890',
+  picture: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
+};
+
+type UpdateProfileScreenProps = {
   navigation: StackNavigationProp<ParamListBase>;
 };
 
-const UpdateProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [mobile, setMobile] = useState('');
-  const [password, setPassword] = useState('');
+const UpdateProfileScreen: React.FC<UpdateProfileScreenProps> = ({ navigation }) => {
+  const [displayName, setDisplayName] = useState(initialUser.displayName);
+  const [email, setEmail] = useState(initialUser.email);
+  const [phoneNumber, setPhoneNumber] = useState(initialUser.phoneNumber);
+  const [picture, setPicture] = useState(initialUser.picture);
+
+  const handleImagePick = () => {
+    launchImageLibrary({
+      mediaType: 'photo',
+      quality: 0.8,
+      maxWidth: 500,
+      maxHeight: 500,
+    }, (response) => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.errorCode) {
+        Alert.alert('Error', 'Failed to pick image');
+      } else if (response.assets && response.assets[0]?.uri) {
+        setPicture(response.assets[0].uri);
+      }
+    });
+  };
+
+  const handleSave = () => {
+    // TODO: Integrate with backend
+    navigation.goBack();
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Update Profile</Text>
-      
-      <View style={styles.form}>
-        <CustomInput
-          placeholder="Name"
-          iconName="person-outline"
-          value={name}
-          onChangeText={setName}
-        />
-        
-        <CustomInput
-          placeholder="Email address"
-          iconName="mail-outline"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-        />
-        
-        <CustomInput
-          placeholder="Mobile number"
-          iconName="call-outline"
-          keyboardType="phone-pad"
-          countryCode="+01"
-          value={mobile}
-          onChangeText={setMobile}
-        />
-        
-        <CustomInput
-          placeholder="Password"
-          iconName="lock-closed-outline"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-        
-        <Text style={styles.termsText}>
-          By updating your profile, you agree to our{' '}
-          <Text style={styles.termsLink}>Terms of use and privacy notice</Text>
-        </Text>
-        
-        <CustomButton
-          title="Save Changes"
-          onPress={() => navigation.goBack()}
-          primary
-        />
-        
-        <View style={styles.orContainer}>
-          <View style={styles.divider} />
-          <Text style={styles.orText}>or</Text>
-          <View style={styles.divider} />
+      <Text style={styles.title}>Edit Profile</Text>
+      <TouchableOpacity style={styles.imageContainer} onPress={handleImagePick}>
+        <Image source={{ uri: picture }} style={styles.profileImage} />
+        <View style={styles.imageOverlay}>
+          <Text style={styles.changePhotoText}>Change Photo</Text>
         </View>
-        
-        <SocialButton
-          title="Update with Google"
-          icon="google"
-          onPress={() => {}}
-        />
-      </View>
+      </TouchableOpacity>
+      <TextInput
+        style={styles.input}
+        placeholder="Display Name"
+        value={displayName}
+        onChangeText={setDisplayName}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Phone Number"
+        value={phoneNumber}
+        onChangeText={setPhoneNumber}
+        keyboardType="phone-pad"
+      />
+      <CustomButton title="Save" onPress={handleSave} primary />
+      <CustomButton title="Cancel" onPress={() => navigation.goBack()} />
     </View>
   );
 };
@@ -86,56 +87,46 @@ const styles = StyleSheet.create({
     padding: 24,
     backgroundColor: 'white',
   },
-  header: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 16,
-  },
-  userName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  userEmail: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 16,
-  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 16,
-  },
-  form: {
-    flex: 1,
-  },
-  termsText: {
-    fontSize: 14,
-    color: '#666',
+    marginBottom: 24,
     textAlign: 'center',
-    marginVertical: 10,
   },
-  termsLink: {
-    color: '#a51c30',
-    fontWeight: 'bold',
-  },
-  orContainer: {
-    flexDirection: 'row',
+  imageContainer: {
     alignItems: 'center',
-    marginVertical: 20,
+    marginBottom: 24,
+    position: 'relative',
   },
-  divider: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#E0E0E0',
+  profileImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
   },
-  orText: {
-    marginHorizontal: 10,
-    color: '#666',
+  imageOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    padding: 8,
+    borderBottomLeftRadius: 60,
+    borderBottomRightRadius: 60,
+  },
+  changePhotoText: {
+    color: 'white',
+    textAlign: 'center',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    fontSize: 16,
+    backgroundColor: '#FAFAFA',
   },
 });
 

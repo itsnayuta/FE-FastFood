@@ -12,6 +12,7 @@ export interface Combo {
 export interface Category {
     id: number;
     name: string;
+    imageUrl: string;
 }
 
 
@@ -66,18 +67,18 @@ export type RootStackParamList = {
         phoneNumber?: string;
         email?: string;
         // Payment information
-        subtotal?: number;      // Tổng tiền hàng
-        deliveryFee?: number;   // Phí giao hàng
-        voucher?: {            // Thông tin voucher
+        subtotal?: number;      
+        deliveryFee?: number;  
+        voucher?: {           
             code: string;
             discount: number;
         };
-        totalPayment?: number;  // Tổng tiền phải trả (subtotal + deliveryFee - voucher.discount)
+        totalPayment?: number;  
         paymentMethod?: string;
         note?: string;
         estimatedDeliveryMin?: string;
         estimatedDeliveryMax?: string;
-        // Order items information
+        
         orderItems?: FoodItem[];
     };
     OrderSuccess: {
@@ -85,7 +86,7 @@ export type RootStackParamList = {
         storeName?: string;
         storeAddress?: string;
         storePhone?: string;
-        // Customer information
+      
         firstName?: string;
         lastName?: string;
         houseNumber?: string;
@@ -95,24 +96,25 @@ export type RootStackParamList = {
         address?: string;
         phoneNumber?: string;
         email?: string;
-        // Payment information
-        subtotal?: number;      // Tổng tiền hàng
-        deliveryFee?: number;   // Phí giao hàng
-        voucher?: {            // Thông tin voucher
+       
+        subtotal?: number;     
+        deliveryFee?: number;   
+        voucher?: {           
             code: string;
             discount: number;
         };
-        totalPayment?: number;  // Tổng tiền phải trả (subtotal + deliveryFee - voucher.discount)
+        totalPayment?: number; 
         paymentMethod?: string;
         note?: string;
         estimatedDeliveryMin?: string;
         estimatedDeliveryMax?: string;
-        // Order items information
+       
         orderItems?: FoodItem[];
     };
     LoginScreen: undefined;
     SignupScreen: undefined;
-    // Add other routes here if they exist
+   
+
 };
 
 export interface CartItem {
