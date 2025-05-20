@@ -2,7 +2,6 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
 import { CommonActions } from "@react-navigation/native";
-import { NavigationContainer } from '@react-navigation/native';
 
 import Header from "../components/Header";
 import HomeScreen from "../screens/HomeScreen";
@@ -13,11 +12,18 @@ import CartScreen from "../screens/CartScreen";
 import OptionsScreen from "../screens/OptionsScreen";
 import ProductDetailsScreen from "../screens/ProductDetailsScreen";
 import ComboDetails from "../screens/ComboDetailsScreen";
+import PaymentScreen from "../screens/PaymentScreen";
+import ProcessingOrderScreen from "../screens/ProcessingOrderScreen";
+import OrderSuccessScreen from "../screens/OrderSuccessScreen";
+import LoginScreen from "../components/LoginScreen";
+import SignupScreen from "../components/SignupScreen";
+import ProfileScreen from "../components/ProfileScreen";
+import UpdateProfileScreen from "../components/UpdateProfileScreen";
 
 const Tab = createBottomTabNavigator();
-const Stack = createStackNavigator(); // Khai báo Stack Navigator
+const Stack = createStackNavigator();
 
-// Tạo Stack Navigator cho MenuScreen
+// Stack for Menu Navigation
 const MenuStackNavigator = () => {
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -28,11 +34,7 @@ const MenuStackNavigator = () => {
     );
 };
 
-import PaymentScreen from "../screens/PaymentScreen";
-import ProcessingOrderScreen from "../screens/ProcessingOrderScreen";
-import OrderSuccessScreen from "../screens/OrderSuccessScreen";
-
-// Điều hướng giữa CartScreen và PaymentScreen
+// Stack for Cart Navigation
 const CartStack = () => {
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -44,6 +46,31 @@ const CartStack = () => {
     );
 };
 
+// Stack for Profile & Authentication
+const OptionsStack = () => {
+    return (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="OptionsMain" component={OptionsScreen} />
+            <Stack.Screen 
+                name="ProfileScreen" 
+                component={ProfileScreen} 
+            />
+            <Stack.Screen 
+                name="UpdateProfileScreen" 
+                component={UpdateProfileScreen} 
+            />
+            <Stack.Screen 
+                name="LoginScreen" 
+                component={LoginScreen} 
+            />
+            <Stack.Screen 
+                name="SignupScreen" 
+                component={SignupScreen} 
+            />
+        </Stack.Navigator>
+    );
+};
+
 const MainNavigator = () => {
     return (
         <>
@@ -51,18 +78,18 @@ const MainNavigator = () => {
             <Tab.Navigator tabBar={(props) => <BottomTab {...props} />}>
                 <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
                 <Tab.Screen name="Menu" component={MenuStackNavigator} options={{ headerShown: false }} />
-                <Tab.Screen name="Promo" component={PromoScreen} options={{ headerShown: false }} />
+            
                 <Tab.Screen
                     name="Cart"
                     component={CartStack}
                     options={{ headerShown: false }}
                     listeners={({ navigation }) => ({
                         tabPress: (e) => {
-                            e.preventDefault(); // Ngăn chặn hành vi mặc định
+                            e.preventDefault();
                             navigation.dispatch(
                                 CommonActions.reset({
                                     index: 0,
-                                    routes: [{ name: 'CartMain' }]
+                                    routes: [{ name: "CartMain" }],
                                 })
                             );
                         },
@@ -70,7 +97,7 @@ const MainNavigator = () => {
                 />
                 <Tab.Screen
                     name="Options"
-                    component={OptionsScreen}
+                    component={OptionsStack}
                     options={{ headerShown: false }}
                 />
             </Tab.Navigator>

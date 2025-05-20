@@ -30,6 +30,7 @@ const ComboDetails: React.FC<ComboDetailsProps> = ({ route }) => {
                 const productDetails = await Promise.all(
                     productInCombos.map(async (item) => {
                         const product = await getProductById(item.id);
+                        console.log("Fetched product for id", item.productId, product);
                         return { ...product, quantity: item.quantity };
                     })
                 );

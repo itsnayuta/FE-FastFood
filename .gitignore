@@ -76,3 +76,4 @@ yarn-error.log
 
 pn.md
 .env
+/android/app/google-services.json

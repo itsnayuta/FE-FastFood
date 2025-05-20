@@ -1,11 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, Image, ActivityIndicator, StyleSheet, TouchableOpacity } from "react-native";
+import {
+    View,
+    Text,
+    FlatList,
+    Image,
+    ActivityIndicator,
+    StyleSheet,
+    TouchableOpacity,
+    TextInput
+} from "react-native";
 import { getProductsByCategoryId } from "../services/api";
-import { Combo } from "../types/index";
 import { Product } from "../types/index";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-
+import { addToCart } from "../utils/cart";
 interface CategoryListProps {
     route: any;
 }
@@ -19,6 +27,7 @@ const CategoryList: React.FC<CategoryListProps> = ({ route }) => {
     const { id: categoryId } = route.params;
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState("");
     const navigation = useNavigation<CategoryListNavigationProp>();
 
     useEffect(() => {
@@ -37,8 +46,13 @@ const CategoryList: React.FC<CategoryListProps> = ({ route }) => {
     }, [categoryId]);
 
     const handleAddToCart = (product: Product) => {
+        addToCart(product);
         console.log("Thêm vào giỏ hàng:", product.name);
     };
+
+    const filteredProducts = products.filter((product) =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     if (loading) {
         return <ActivityIndicator size="large" color="#e4002b" style={styles.loading} />;
@@ -46,21 +60,26 @@ const CategoryList: React.FC<CategoryListProps> = ({ route }) => {
 
     return (
         <View style={styles.container}>
-            {products.length === 0 ? (
+            <TextInput
+                style={styles.searchInput}
+                placeholder="Tìm kiếm sản phẩm..."
+                value={searchTerm}
+                onChangeText={(text) => setSearchTerm(text)}
+            />
+
+            {filteredProducts.length === 0 ? (
                 <Text style={styles.noProductText}>Không có sản phẩm nào</Text>
             ) : (
                 <FlatList
-                    data={products}
+                    data={filteredProducts}
                     keyExtractor={(item) => item.id.toString()}
                     renderItem={({ item }) => (
                         <TouchableOpacity
                             onPress={() => navigation.navigate("ProductDetails", { product: item })}
                         >
-                            <View style={styles.productCard} >
-                                {/* Ảnh sản phẩm bên trái */}
+                            <View style={styles.productCard}>
                                 <Image source={{ uri: item.imageUrl }} style={styles.productImage} />
 
-                                {/* Thông tin sản phẩm bên phải */}
                                 <View style={styles.productInfo}>
                                     <Text style={styles.productName}>{item.name}</Text>
                                     <Text style={styles.productPrice}>{item.price}₫</Text>
@@ -68,7 +87,6 @@ const CategoryList: React.FC<CategoryListProps> = ({ route }) => {
                                         {item.description || "Mô tả sản phẩm..."}
                                     </Text>
 
-                                    {/* Nút "Thêm" ở góc dưới bên phải */}
                                     <TouchableOpacity
                                         style={styles.addToCartButton}
                                         onPress={() => handleAddToCart(item)}
@@ -90,6 +108,15 @@ const styles = StyleSheet.create({
     loading: { flex: 1, justifyContent: "center", alignItems: "center" },
     noProductText: { textAlign: "center", fontSize: 18, marginTop: 20 },
 
+    searchInput: {
+        height: 40,
+        borderColor: "#ccc",
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 10,
+        marginBottom: 10
+    },
+
     productCard: {
         flexDirection: "row",
         padding: 10,
@@ -110,7 +137,7 @@ const styles = StyleSheet.create({
         marginRight: 10
     },
     productInfo: {
-        flex: 1, // Lấp đầy không gian còn lại
+        flex: 1,
         justifyContent: "space-between"
     },
     productName: {
@@ -129,16 +156,15 @@ const styles = StyleSheet.create({
         color: "#666",
         marginBottom: 10
     },
-
     addToCartButton: {
-        backgroundColor: "#ddd",
+        backgroundColor: "#e4002b", // 🔴 Đỏ
         paddingVertical: 6,
         paddingHorizontal: 15,
         borderRadius: 5,
-        alignSelf: "flex-end" // Đặt ở góc dưới bên phải
+        alignSelf: "flex-end"
     },
     addToCartText: {
-        color: "#000",
+        color: "#fff", // Trắng
         fontWeight: "bold",
         fontSize: 14
     },
