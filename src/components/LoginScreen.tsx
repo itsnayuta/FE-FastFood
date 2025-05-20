@@ -10,6 +10,7 @@ import auth from '@react-native-firebase/auth';
 import Config from 'react-native-config';
 import axios from 'axios';
 import { authStorage } from '../utils/authStorage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type LoginScreenProps = {
   navigation: StackNavigationProp<ParamListBase>;
@@ -54,11 +55,12 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
         // Create a new account or sign in existing user
         const userCredential = await auth().createUserWithEmailAndPassword(email, password);
         const idToken = await userCredential.user.getIdToken();
-        
+        const backendData = await sendIdTokenToBackend(idToken, password);
+        await AsyncStorage.setItem('user', JSON.stringify(backendData.user));
         console.log('[Auth] User authenticated');
         await sendIdTokenToBackend(idToken);
-        
         Alert.alert('Success', 'Logged in successfully!');
+        
         navigation.navigate('Home'); // Navigate to home screen
       } catch (error: any) {
         console.error('[Auth Error]', error);
@@ -117,7 +119,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
       const firebaseIdToken = await userCredential.user.getIdToken(true);
 
       await sendIdTokenToBackend(firebaseIdToken);
-      
+      await AsyncStorage.setItem('user', JSON.stringify(userCredential.user));
+      const backendData = await sendIdTokenToBackend(firebaseIdToken);
+      await AsyncStorage.setItem('user', JSON.stringify(backendData.user));
       Alert.alert('Success', 'Logged in with Google successfully!');
       navigation.navigate('Home'); // Navigate to home screen
     } catch (error: any) {

@@ -1,5 +1,5 @@
 import api from "../utils/api";
-
+import { AxiosResponse } from "axios";
 
 export const getCategories = async () => {
   try {
@@ -75,6 +75,21 @@ export const validateVoucher = async (code: string) => {
         return response.data;
     } catch (error: any) {
         console.warn('Voucher không tồn tại hoặc bị lỗi:', error?.message || error);
-        return null; // hoặc undefined, tùy bạn xử lý
+        return null; 
+    }
+};
+
+export async function processPayment(bill: any): Promise<AxiosResponse> {
+    const response = await api.post('/payments/process', bill);
+    return response;
+};
+
+export const processOrder = async (orderPayload: any) => {
+    try {
+        const response = await api.post('/orders', orderPayload);
+        return response.data;
+    } catch (error: any) {
+        console.error('Error processing order:', error?.message || error);
+        throw error;
     }
 };
