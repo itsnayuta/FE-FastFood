@@ -10,7 +10,6 @@ import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import Config from 'react-native-config';
 import axios from 'axios';
 import { authStorage } from '../utils/authStorage';
-import api from '../utils/api';
 
 type SignupScreenProps = {
   navigation: StackNavigationProp<ParamListBase>;
@@ -44,12 +43,12 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const sendIdTokenToBackend = async (idToken: string, name?: string, phoneNumber?: string, password?: string) => {
-    const apiUrl = `${Config.API_BASE_URL}/auth/login`;
+  const sendIdTokenToBackend = async (name?: string, phoneNumber?: string, password?: string) => {
+    const apiUrl = `${Config.API_BASE_URL}/auth/signup`;
     try {
       const response = await axios.post(
         apiUrl,
-        {idToken, name, phoneNumber, password},
+        {name, phoneNumber, password},
         {
           headers: {
             'Content-Type': 'application/json',
@@ -79,25 +78,13 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
     if (validateForm()) {
       setLoading(true);
       try {
-        // Create user with Firebase
-        const userCredential = await auth().createUserWithEmailAndPassword(
-          email,
-          password,
-        );
-
-        // Update profile with name
-        await userCredential.user.updateProfile({
-          displayName: name,
-        });
-
-        // Get the ID token
-        const idToken = await userCredential.user.getIdToken();
-
-        // Send to backend
-        await sendIdTokenToBackend(idToken, name, mobile, password);
-
-        Alert.alert('Success', 'Account created successfully!');
-        navigation.navigate('Home'); // Navigate to home screen after successful signup
+        const {user} = await sendIdTokenToBackend(name, email, password);
+        Alert.alert('Success', 'Logged in successfully!');
+        if (user.role === 'ADMIN') {
+          navigation.navigate('AdminRoot');
+        } else {
+          navigation.navigate('MainRoot');
+        }
       } catch (error: any) {
         console.error('[Signup Error]', error);
         let errorMessage = 'Failed to create account';
