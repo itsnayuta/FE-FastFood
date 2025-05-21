@@ -1,13 +1,16 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Alert } from "react-native";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { authStorage } from "../../utils/authStorage";
 
 type AdminTabParamList = {
     'Admin Home': undefined;
     'Manage Users': undefined;
     'Manage Orders': undefined;
     'Manage Product': undefined;
+    'Login': undefined;
+    'Signup': undefined;
 };
 
 type AdminHomeScreenProps = {
@@ -32,14 +35,36 @@ const AdminHomeScreen: React.FC<AdminHomeScreenProps> = ({ navigation }) => {
             screen: "Manage Product" as const
         }
     ];
-
+    const logout = async () => {
+        Alert.alert(
+            'Đăng xuất',
+            'Bạn có chắc muốn đăng xuất không?',
+            [
+                { text: 'Hủy', style: 'cancel' },
+                {
+                    text: 'Đồng ý',
+                    onPress: async () => {
+                        await authStorage.removeTokens();
+                        // Reset stack, điều hướng về màn Login
+                        navigation.reset({
+                            index: 0,
+                            routes: [{ name: 'Login' }],
+                        });
+                    }
+                }
+            ]
+        );
+    };
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.title}>Trang chính của Admin</Text>
                 <Text style={styles.subtitle}>Quản lý hệ thống</Text>
+                <TouchableOpacity onPress={logout} style={styles.logoutButton}>
+                    <Ionicons name="log-out-outline" size={28} color="#fff" />
+                </TouchableOpacity>
             </View>
-            
+
             <View style={styles.menuContainer}>
                 {menuItems.map((item, index) => (
                     <TouchableOpacity
@@ -117,5 +142,12 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#333',
         fontWeight: '500'
+    },
+    logoutButton: {
+        padding: 8,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
     }
 });

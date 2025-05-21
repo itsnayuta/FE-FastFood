@@ -16,7 +16,11 @@ const RootNavigator = () => {
   useEffect(() => {
     const checkUserRole = async () => {
       const user = await authStorage.getUser();
-      if (user && user.role === 'ADMIN') {
+      console.log(user)
+      if (user === null) {
+        setInitialRoute('Login');
+      }
+      else if (user && user.role === 'ADMIN') {
         setInitialRoute('AdminRoot');
       } else {
         setInitialRoute('MainRoot');
@@ -32,7 +36,7 @@ const RootNavigator = () => {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator 
+      <Stack.Navigator
         initialRouteName={initialRoute}
         screenOptions={{ headerShown: false }}
       >

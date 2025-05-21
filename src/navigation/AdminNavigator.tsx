@@ -8,8 +8,6 @@ import AdminHomeScreen from "../screens/admin/AdminHomeScreen";
 import ManageUsersScreen from "../screens/admin/ManageUsersScreen";
 import ManageOrdersScreen from "../screens/admin/ManageOrdersScreen";
 import ManageProductScreen from "../screens/admin/ManageProductScreen";
-import AddProductScreen from "../screens/admin/AddProductScreen";
-import EditProductScreen from "../screens/admin/EditProductScreen";
 
 // Tạo stack cho từng tab admin
 const AdminHomeStack = createStackNavigator();
@@ -42,8 +40,6 @@ const ManageOrdersStackNavigator = () => (
 const ManageProductStackNavigator = () => (
     <ManageProductStack.Navigator screenOptions={{ headerShown: false }}>
         <ManageProductStack.Screen name="ManageProductMain" component={ManageProductScreen} />
-        <ManageProductStack.Screen name="AddProduct" component={AddProductScreen} />
-        <ManageProductStack.Screen name="EditProduct" component={EditProductScreen} />
     </ManageProductStack.Navigator>
 );
 
@@ -90,29 +86,29 @@ const AdminNavigator = () => {
                 }
             })}
         >
-            <Tab.Screen 
-                name="Admin Home" 
+            <Tab.Screen
+                name="Admin Home"
                 component={AdminHomeStackNavigator}
                 options={{
                     title: 'Trang chủ'
                 }}
             />
-            <Tab.Screen 
-                name="Manage Users" 
+            <Tab.Screen
+                name="Manage Users"
                 component={ManageUsersStackNavigator}
                 options={{
                     title: 'Người dùng'
                 }}
             />
-            <Tab.Screen 
-                name="Manage Orders" 
+            <Tab.Screen
+                name="Manage Orders"
                 component={ManageOrdersStackNavigator}
                 options={{
                     title: 'Đơn hàng'
                 }}
             />
-            <Tab.Screen 
-                name="Manage Product" 
+            <Tab.Screen
+                name="Manage Product"
                 component={ManageProductStackNavigator}
                 options={{
                     title: 'Sản phẩm'

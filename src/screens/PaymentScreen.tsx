@@ -112,6 +112,7 @@ const PaymentScreen: React.FC = () => {
     };
     console.log("Bill data:", bill);
     try {
+      console.log("Processing payment...", bill);
       const response = await processPayment(bill);
       if (response.status < 200 || response.status >= 300) {
         const errorText = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);

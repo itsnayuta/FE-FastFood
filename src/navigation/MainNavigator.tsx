@@ -50,21 +50,21 @@ const OptionsStack = () => {
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="OptionsMain" component={OptionsScreen} />
-            <Stack.Screen 
-                name="ProfileScreen" 
-                component={ProfileScreen} 
+            <Stack.Screen
+                name="ProfileScreen"
+                component={ProfileScreen}
             />
-            <Stack.Screen 
-                name="UpdateProfileScreen" 
-                component={UpdateProfileScreen} 
+            <Stack.Screen
+                name="UpdateProfileScreen"
+                component={UpdateProfileScreen}
             />
-            <Stack.Screen 
-                name="LoginScreen" 
-                component={LoginScreen} 
+            <Stack.Screen
+                name="LoginScreen"
+                component={LoginScreen}
             />
-            <Stack.Screen 
-                name="SignupScreen" 
-                component={SignupScreen} 
+            <Stack.Screen
+                name="SignupScreen"
+                component={SignupScreen}
             />
         </Stack.Navigator>
     );
@@ -77,7 +77,7 @@ const MainNavigator = () => {
             <Tab.Navigator tabBar={(props) => <BottomTab {...props} />}>
                 <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
                 <Tab.Screen name="Menu" component={MenuStackNavigator} options={{ headerShown: false }} />
-            
+
                 <Tab.Screen
                     name="Cart"
                     component={CartStack}

@@ -70,26 +70,64 @@ export const getComboByType = async (type: string) => {
 };
 
 export const validateVoucher = async (code: string) => {
-    try {
-        const response = await api.get(`/vouchers/code/${code}`);
-        return response.data;
-    } catch (error: any) {
-        console.warn('Voucher không tồn tại hoặc bị lỗi:', error?.message || error);
-        return null; 
-    }
+  try {
+    const response = await api.get(`/vouchers/code/${code}`);
+    return response.data;
+  } catch (error: any) {
+    console.warn('Voucher không tồn tại hoặc bị lỗi:', error?.message || error);
+    return null;
+  }
 };
 
 export async function processPayment(bill: any): Promise<AxiosResponse> {
-    const response = await api.post('/payments/process', bill);
-    return response;
+  console.log(bill);
+  const response = await api.post('/payments/process', bill);
+  return response;
 };
 
 export const processOrder = async (orderPayload: any) => {
-    try {
-        const response = await api.post('/orders', orderPayload);
-        return response.data;
-    } catch (error: any) {
-        console.error('Error processing order:', error?.message || error);
-        throw error;
-    }
+  try {
+    const response = await api.post('/orders', orderPayload);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error processing order:', error?.message || error);
+    throw error;
+  }
+};
+
+
+// Thêm sản phẩm (POST /products)
+export const addProduct = async (product: any): Promise<any | null> => {
+  try {
+    const response: AxiosResponse = await api.post('/products', product);
+    console.log("Added product:", response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error("Error adding product:", error?.message || error);
+    return null;
+  }
+};
+
+// Cập nhật sản phẩm theo ID (PATCH /products/{id})
+export const updateProduct = async (id: number, product: any): Promise<any | null> => {
+  try {
+    const response: AxiosResponse = await api.patch(`/products/${id}`, product);
+    console.log("Updated product:", response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error(`Error updating product with ID ${id}:`, error?.message || error);
+    return null;
+  }
+};
+
+// Xoá sản phẩm theo ID (DELETE /products/{id})
+export const deleteProductById = async (id: number): Promise<string | null> => {
+  try {
+    const response: AxiosResponse = await api.delete(`/products/${id}`);
+    console.log("Delete response:", response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error(`Error deleting product with ID ${id}:`, error?.message || error);
+    return null;
+  }
 };

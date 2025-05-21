@@ -1,334 +1,81 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, SafeAreaView, Image, Alert } from "react-native";
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import api from "../../utils/api";
-import { useNavigation } from "@react-navigation/native";
-import type { StackNavigationProp } from "@react-navigation/stack";
+import {
+    View,
+    Text,
+    StyleSheet,
+    FlatList,
+    Image,
+    TouchableOpacity,
+    SafeAreaView,
+    Dimensions,
+} from "react-native";
+import { MenuTab, getMenuTabs } from "../../services/getMenuTabs";
 
-interface Product {
-    id: string;
-    name: string;
-    description: string;
-    price: number;
-    imageUrl: string;
-    categoryId: number;
-    size: string;
-}
+const { width } = Dimensions.get("window");
 
-type ManageProductStackParamList = {
-    ManageProductMain: undefined;
-    AddProduct: undefined;
-    EditProduct: { product: Product };
-};
+export default function ManageProductsScreen() {
+    const [categories, setCategories] = useState<MenuTab[]>([]);
 
-type ManageProductScreenNavigationProp = StackNavigationProp<ManageProductStackParamList>;
-
-const ManageProductScreen = () => {
-    const navigation = useNavigation<ManageProductScreenNavigationProp>();
-    const [searchQuery, setSearchQuery] = useState("");
-    const [products, setProducts] = useState<Product[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    
-    const fetchAllProducts = async () => {
-        try {
-          setLoading(true);
-          setError(null);
-      
-          const productData = await api.get('/admin/get-all-products');
-          setProducts(productData.data);
-        } catch (err) {
-          Alert.alert('Error', 'Failed to load products. Please try again.');
-        } finally {
-          setLoading(false);
-        }
-    };
-    
     useEffect(() => {
-        fetchAllProducts();
+        const fetchCategories = async () => {
+            const tabs = await getMenuTabs();
+            const filtered = tabs.filter(
+                (tab) => !tab.name.toLowerCase().includes("combo")
+            );
+            setCategories(filtered);
+        };
+        fetchCategories();
     }, []);
 
-    const handleAddPress = () => {
-        navigation.navigate('AddProduct');
-    };
-
-    const handleEditPress = (product: Product) => {
-        navigation.navigate('EditProduct', { product });
-    };
-
-    const handleDeleteProduct = async (productId: string) => {
-        Alert.alert(
-            'Confirm Delete',
-            'Are you sure you want to delete this product?',
-            [
-                {
-                    text: 'Cancel',
-                    style: 'cancel'
-                },
-                {
-                    text: 'Delete',
-                    style: 'destructive',
-                    onPress: async () => {
-                        try {
-                            setLoading(true);
-                            await api.delete(`/admin/products/${productId}`);
-                            Alert.alert('Success', 'Product deleted successfully');
-                            // Refresh the product list
-                            fetchAllProducts();
-                        } catch (error) {
-                            console.error('Error deleting product:', error);
-                            Alert.alert('Error', 'Failed to delete product. Please try again.');
-                        } finally {
-                            setLoading(false);
-                        }
-                    }
-                }
-            ]
-        );
-    };
-
-    const renderProductItem = ({ item }: { item: Product }) => (
-        <View style={styles.productCard}>
-            <View style={styles.productImageContainer}>
-                <Image
-                    source={{ uri: item.imageUrl }}
-                    style={styles.productImage}
-                />
-                <View style={styles.categoryTag}>
-                    <Text style={styles.categoryText}>{item.description}</Text>
-                </View>
-            </View>
-            <View style={styles.productInfo}>
-                <Text style={styles.productName}>{item.name}</Text>
-                <Text style={styles.productPrice}>{item.price}</Text>
-            </View>
-            <View style={styles.actionButtons}>
-                <TouchableOpacity 
-                    style={[styles.actionButton, styles.editButton]}
-                    onPress={() => handleEditPress(item)}
-                >
-                    <Ionicons name="pencil" size={20} color="#4A90E2" />
-                </TouchableOpacity>
-                <TouchableOpacity 
-                    style={[styles.actionButton, styles.deleteButton]}
-                    onPress={() => handleDeleteProduct(item.id)}
-                >
-                    <Ionicons name="trash" size={20} color="#FF3B30" />
-                </TouchableOpacity>
-            </View>
-        </View>
+    const renderItem = ({ item }: any) => (
+        <TouchableOpacity style={styles.card} onPress={() => { }}>
+            <Image source={{ uri: item.imageUrl }} style={styles.image} />
+            <Text style={styles.subtitle}>{item.name}</Text>
+        </TouchableOpacity>
     );
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.title}>Quản lý sản phẩm</Text>
-                <Text style={styles.subtitle}>Tổng số: {products.length} sản phẩm</Text>
-            </View>
-
-            <View style={styles.searchContainer}>
-                <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
-                <TextInput
-                    style={styles.searchInput}
-                    placeholder="Tìm kiếm sản phẩm..."
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                />
-            </View>
-
-            <View style={styles.filterContainer}>
-                <TouchableOpacity style={styles.filterButton}>
-                    <Ionicons name="filter" size={20} color="#4A90E2" />
-                    <Text style={styles.filterText}>Lọc</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.filterButton}>
-                    <Ionicons name="options" size={20} color="#4A90E2" />
-                    <Text style={styles.filterText}>Sắp xếp</Text>
-                </TouchableOpacity>
-            </View>
-
+            <Text style={styles.header}>QUẢN LÝ DANH MỤC MÓN ĂN</Text>
             <FlatList
-                data={products}
-                renderItem={renderProductItem}
-                keyExtractor={item => item.id}
+                data={categories}
+                renderItem={renderItem}
+                keyExtractor={(item) => item.name}
                 numColumns={2}
-                contentContainerStyle={styles.listContainer}
+                contentContainerStyle={styles.menu}
             />
-
-            <TouchableOpacity style={styles.addButton} onPress={handleAddPress}>
-                <Ionicons name="add" size={24} color="#FFFFFF" />
-            </TouchableOpacity>
         </SafeAreaView>
     );
-};
-
-export default ManageProductScreen;
+}
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#F5F6FA'
-    },
+    container: { flex: 1, backgroundColor: "#fff" },
     header: {
-        padding: 20,
-        backgroundColor: '#4A90E2',
-        borderBottomLeftRadius: 20,
-        borderBottomRightRadius: 20,
-    },
-    title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#FFFFFF',
-        marginBottom: 8
-    },
-    subtitle: {
         fontSize: 16,
-        color: '#E8F0FE',
-        opacity: 0.8
-    },
-    searchContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#FFFFFF',
-        margin: 16,
+        fontWeight: "bold",
         paddingHorizontal: 16,
-        borderRadius: 12,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 5,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderColor: "#ddd",
     },
-    searchIcon: {
-        marginRight: 8
+    menu: {
+        padding: 8,
     },
-    searchInput: {
-        flex: 1,
-        height: 48,
-        fontSize: 16,
-        color: '#333'
-    },
-    filterContainer: {
-        flexDirection: 'row',
-        paddingHorizontal: 16,
-        marginBottom: 16
-    },
-    filterButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#FFFFFF',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 20,
-        marginRight: 12,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 5,
-    },
-    filterText: {
-        marginLeft: 4,
-        color: '#4A90E2',
-        fontWeight: '500'
-    },
-    listContainer: {
-        padding: 8
-    },
-    productCard: {
+    card: {
         flex: 1,
         margin: 8,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 12,
-        overflow: 'hidden',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 5,
+        backgroundColor: "#f9f9f9",
+        borderRadius: 8,
+        overflow: "hidden",
+        elevation: 2,
     },
-    productImageContainer: {
-        position: 'relative'
+    image: {
+        width: "100%",
+        height: 120,
     },
-    productImage: {
-        width: '100%',
-        height: 150,
-        resizeMode: 'cover'
+    subtitle: {
+        textAlign: "center",
+        padding: 8,
+        fontWeight: "600",
     },
-    categoryTag: {
-        position: 'absolute',
-        top: 8,
-        right: 8,
-        backgroundColor: 'rgba(74, 144, 226, 0.9)',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 12
-    },
-    categoryText: {
-        color: '#FFFFFF',
-        fontSize: 12,
-        fontWeight: '500'
-    },
-    productInfo: {
-        padding: 12
-    },
-    productName: {
-        fontSize: 16,
-        fontWeight: '500',
-        color: '#333',
-        marginBottom: 4
-    },
-    productPrice: {
-        fontSize: 14,
-        color: '#4A90E2',
-        fontWeight: 'bold'
-    },
-    actionButtons: {
-        flexDirection: 'row',
-        padding: 12,
-        borderTopWidth: 1,
-        borderTopColor: '#F0F0F0'
-    },
-    actionButton: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 8
-    },
-    editButton: {
-        backgroundColor: '#E8F0FE'
-    },
-    deleteButton: {
-        backgroundColor: '#FFE5E5'
-    },
-    addButton: {
-        position: 'absolute',
-        right: 20,
-        bottom: 20,
-        width: 56,
-        height: 56,
-        borderRadius: 28,
-        backgroundColor: '#4A90E2',
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
-    }
 });

@@ -1,17 +1,18 @@
-import React, {useState, useEffect} from 'react';
-import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 import * as Animatable from 'react-native-animatable';
-import {useNavigation, CommonActions} from '@react-navigation/native';
-import type {CompositeNavigationProp} from '@react-navigation/native';
-import type {BottomTabNavigationProp} from '@react-navigation/bottom-tabs';
-import type {StackNavigationProp} from '@react-navigation/stack';
+import { useNavigation, CommonActions } from '@react-navigation/native';
+import type { CompositeNavigationProp } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import { authStorage } from '../utils/authStorage';
 
 type RootStackParamList = {
+  ProfileScreen: undefined;
   LoginScreen: undefined;
   SignupScreen: undefined;
   Menu: undefined;
-  MenuMain: {initialTab: string};
+  MenuMain: { initialTab: string };
 };
 
 type NavigationProp = CompositeNavigationProp<
@@ -90,10 +91,33 @@ const OptionsScreen = () => {
     }
   };
 
+  const logout = async () => {
+    Alert.alert(
+      'Đăng xuất',
+      'Bạn có chắc muốn đăng xuất không?',
+      [
+        { text: 'Hủy', style: 'cancel' },
+        {
+          text: 'Đồng ý',
+          onPress: async () => {
+            await authStorage.removeTokens();
+            // Reset stack, điều hướng về màn Login
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'LoginScreen' }],
+            });
+          }
+        }
+      ]
+    );
+  };
+
   return (
-  <>
-    <View style={styles.container}>
-      {!isLoggedIn && (
+    <>
+      <View style={styles.container}>
+
+        {/* khi chưa log in sẽ route đến LoginScreen nên không cần hiển thị phần này */}
+        {/* {!isLoggedIn && (
         <View style={{ flex: 0, gap: 5, marginBottom: 60 }}>
           <Text style={{ fontSize: 40, fontWeight: '900' }}>BẮT ĐẦU</Text>
           <View style={{ flexDirection: 'row', gap: 10 }}>
@@ -106,74 +130,87 @@ const OptionsScreen = () => {
             </TouchableOpacity>
           </View>
         </View>
-      )}
+      )} */}
 
-      {renderCollapsibleSection({
-        title: 'Danh Mục Món Ăn',
-        isExpanded: menuFood,
-        setIsExpanded: setismenufoodclicked,
-        items: [
-          {
-            label: 'Combo 1 người',
-            onPress: () =>
-              navigation.dispatch(
-                CommonActions.reset({
-                  index: 0,
-                  routes: [
-                    {
-                      name: 'Menu',
-                      state: {
-                        routes: [
-                          {
-                            name: 'MenuMain',
-                            params: { initialTab: 'Combo nhóm 1' },
-                          },
-                        ],
+        <TouchableOpacity
+          style={styles.profileButton}
+          onPress={() => navigation.navigate('ProfileScreen')}
+        >
+          <Text style={styles.profileButtonText}>Trang Cá Nhân</Text>
+        </TouchableOpacity>
+        {renderCollapsibleSection({
+          title: 'Danh Mục Món Ăn',
+          isExpanded: menuFood,
+          setIsExpanded: setismenufoodclicked,
+          items: [
+            {
+              label: 'Combo 1 người',
+              onPress: () =>
+                navigation.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [
+                      {
+                        name: 'Menu',
+                        state: {
+                          routes: [
+                            {
+                              name: 'MenuMain',
+                              params: { initialTab: 'Combo nhóm 1' },
+                            },
+                          ],
+                        },
                       },
-                    },
-                  ],
-                })
-              ),
-          },
-          { label: 'Combo nhóm', onPress: () => {} },
-          { label: 'Gà Rán - Gà Quay', onPress: () => {} },
-          {
-            label: 'Thức Ăn Nhẹ',
-            onPress: () =>
-              navigation.dispatch(
-                CommonActions.reset({
-                  index: 0,
-                  routes: [
-                    {
-                      name: 'Menu',
-                      state: {
-                        routes: [
-                          {
-                            name: 'MenuMain',
-                            params: { initialTab: 'Thức ăn nhẹ' },
-                          },
-                        ],
+                    ],
+                  })
+                ),
+            },
+            { label: 'Combo nhóm', onPress: () => { } },
+            { label: 'Gà Rán - Gà Quay', onPress: () => { } },
+            {
+              label: 'Thức Ăn Nhẹ',
+              onPress: () =>
+                navigation.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [
+                      {
+                        name: 'Menu',
+                        state: {
+                          routes: [
+                            {
+                              name: 'MenuMain',
+                              params: { initialTab: 'Thức ăn nhẹ' },
+                            },
+                          ],
+                        },
                       },
-                    },
-                  ],
-                })
-              ),
-          },
-        ],
-      })}
+                    ],
+                  })
+                ),
+            },
+          ],
+        })}
 
-      {renderCollapsibleSection({
-        title: 'Đơn Hàng',
-        isExpanded: contactaboutus,
-        setIsExpanded: setiscontactaboutusclicked,
-        items: [
-          { label: 'Lịch Sử Đặt Hàng', onPress: () => {} },
-          { label: 'Theo Dõi Đơn Hàng', onPress: () => {} },
-        ],
-      })}
-    </View>
-  </>
-);
+        {renderCollapsibleSection({
+          title: 'Đơn Hàng',
+          isExpanded: contactaboutus,
+          setIsExpanded: setiscontactaboutusclicked,
+          items: [
+            { label: 'Lịch Sử Đặt Hàng', onPress: () => { } },
+            { label: 'Theo Dõi Đơn Hàng', onPress: () => { } },
+          ],
+        })}
+      </View>
+
+      <TouchableOpacity
+        style={styles.logoutButton}
+        onPress={logout}
+      >
+        <Text style={styles.logoutButtonText}>Đăng Xuất</Text>
+      </TouchableOpacity>
+    </>
+  );
 
 };
 
@@ -182,6 +219,34 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     padding: 20,
+  },
+  profileButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#f0f0f0',  // màu nền nhạt nhẹ, gần màu nền tổng thể
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#333',         // màu viền giống text title để đồng bộ
+    alignItems: 'center',
+    marginBottom: 25,
+  },
+  profileButtonText: {
+    color: '#333',               // màu text giống tiêu đề, đậm vừa phải
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  logoutButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#FF3B30', // Màu đỏ nổi bật báo hiệu hành động đăng xuất
+    borderRadius: 6,
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  logoutButtonText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 16,
   },
 });
 

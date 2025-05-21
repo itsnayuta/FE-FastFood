@@ -1,23 +1,23 @@
-import { useNavigation } from "@react-navigation/native";
+import { TabRouter, useNavigation } from "@react-navigation/native";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import React from "react";
 import { View, StyleSheet, TouchableOpacity, Image } from "react-native";
 
-type RootStackParamList = {
-    ProfileScreen: undefined;
-    // add other screens here if needed
-};
+
 
 const Header = () => {
-    const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
     return (
         <View style={styles.container}>
             {/* Logo KFC bên trái */}
             <Image source={require("../assets/kfc_logo.png")} style={styles.logo} resizeMode="contain" />
 
             {/* Icon tài khoản bên phải */}
-            <TouchableOpacity onPress={() => navigation.navigate("ProfileScreen")}>
+            <TouchableOpacity
+            // không sử dụng được do Headers không nằm trong Stack Navigator
+            // onPress={() => navigation.navigate("ProfileScreen")}
+            >
                 <Image source={require("../assets/avatar_icon.png")} style={styles.avatar} />
+
             </TouchableOpacity>
         </View>
     );
