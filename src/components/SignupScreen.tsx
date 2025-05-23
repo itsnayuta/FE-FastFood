@@ -1,16 +1,17 @@
 import React, {useState} from 'react';
-import {StyleSheet, View, Text, TouchableOpacity} from 'react-native';
+import {StyleSheet, View, Text, TouchableOpacity, Alert} from 'react-native';
 import CustomInput from './CustomInput';
 import CustomButton from './CustomButton';
 import SocialButton from './SocialButton';
 import ErrorPopup from './ErrorPopup';
 import {StackNavigationProp} from '@react-navigation/stack';
-import {ParamListBase} from '@react-navigation/native';
+import {CommonActions, ParamListBase} from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import Config from 'react-native-config';
 import axios from 'axios';
 import { authStorage } from '../utils/authStorage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type SignupScreenProps = {
   navigation: StackNavigationProp<ParamListBase>;
@@ -45,12 +46,68 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const sendIdTokenToBackend = async (name?: string, phoneNumber?: string, password?: string) => {
+  const sendIdTokenToBackend = async (
+    email: string,
+    name: string,
+    phoneNumber: string,
+    password: string
+  ) => {
     const apiUrl = `${Config.API_BASE_URL}/auth/signup`;
+    try {
+      console.log('[Signup Request Payload]', { email, name, phoneNumber, password });
+  
+      const response = await axios.post(
+        apiUrl,
+        { email, name, phoneNumber, password },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          timeout: 10000,
+        }
+      );
+  
+      console.log('[Signup Response]', response);
+      console.log('[Signup Response Data]', response.data);
+  
+      const { accessToken, refreshToken, user } = response.data;
+  
+      if (!accessToken || !refreshToken) {
+        console.warn('[Signup Warning] Token missing in response');
+      } else {
+        console.log('[Signup Token]', { accessToken, refreshToken });
+        await authStorage.storeTokens(accessToken, refreshToken, user);
+      }
+  
+      return response.data;
+    } catch (err: any) {
+      console.log('[Signup Error Raw]', err);
+      console.log('[Signup Error Data]', err.response?.data || err.message);
+  
+      let errorMessage = err.response?.data || err.message || 'Không thể kết nối với máy chủ. Vui lòng thử lại sau.';
+      if (axios.isAxiosError(err)) {
+        const backendMessage = err.response?.data?.message;
+        if (backendMessage) {
+          errorMessage = backendMessage;
+        }
+      }
+  
+      setErrorPopup({
+        visible: true,
+        message: errorMessage,
+      });
+  
+      return; // Don't throw
+    }
+  };
+  
+
+  const sendIdTokenToBackendV2 = async (idToken: string) => {
+    const apiUrl = `${Config.API_BASE_URL}/auth/oauth`;
     try {
       const response = await axios.post(
         apiUrl,
-        {name, phoneNumber, password},
+        {idToken},
         {
           headers: {
             'Content-Type': 'application/json',
@@ -58,18 +115,51 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
           timeout: 10000,
         },
       );
-      console.log('[Auth] Received response:', response.data);
-      await authStorage.storeTokens(
-        response.data.accessToken,
-        response.data.refreshToken,
-        response.data.user
-      );
+
+      if (response.data.token) {
+        await authStorage.storeTokens(
+          response.data.accessToken,
+          response.data.refreshToken,
+          response.data.user
+        );
+      }
+     
       return response.data;
     } catch (err: any) {
       if (axios.isAxiosError(err)) {
+        if (err.response?.status === 401) {
+          setErrorPopup({
+            visible: true,
+            message: 'Token xác thực không hợp lệ. Vui lòng thử đăng nhập lại',
+          });
+        } else if (err.code === 'ECONNABORTED') {
+          setErrorPopup({
+            visible: true,
+            message: 'Máy chủ phản hồi quá lâu. Vui lòng kiểm tra kết nối internet và thử lại',
+          });
+        } else if (err.response) {
+          setErrorPopup({
+            visible: true,
+            message: `Lỗi máy chủ (${err.response.status}): ${
+              err.response.data.message || 'Lỗi không xác định'
+            }`,
+          });
+        } else if (err.request) {
+          setErrorPopup({
+            visible: true,
+            message: 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet và đảm bảo máy chủ đang hoạt động',
+          });
+        } else {
+          setErrorPopup({
+            visible: true,
+            message: 'Đã xảy ra lỗi không mong muốn. Vui lòng thử lại',
+          });
+        }
+      } else {
+        console.error('[Backend Error] Unknown:', err);
         setErrorPopup({
           visible: true,
-          message: err.response?.data?.message || 'Không thể kết nối với máy chủ. Vui lòng thử lại sau.',
+          message: 'Đã xảy ra lỗi không mong muốn. Vui lòng thử lại',
         });
       }
       throw err;
@@ -81,14 +171,23 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
     if (validateForm()) {
       setLoading(true);
       try {
-        const {user} = await sendIdTokenToBackend(name, email, password);
+        const {user} = await sendIdTokenToBackend(email, name, email, password);
         if (user.role === 'ADMIN') {
-          navigation.navigate('AdminRoot');
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'AdminRoot' }],
+            })
+          );
         } else {
-          navigation.navigate('MainRoot');
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'MainRoot' }],
+            })
+          );
         }
       } catch (error: any) {
-        console.error('[Signup Error]', error);
         let errorMessage = 'Không thể tạo tài khoản';
 
         switch (error.code) {
@@ -119,24 +218,32 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
     try {
       setLoading(true);
       await GoogleSignin.signOut();
-
-      console.log('[GoogleSignIn] Checking Play Services...');
       await GoogleSignin.hasPlayServices();
-      console.log('[GoogleSignIn] Initiating sign-in...');
       const response = await GoogleSignin.signIn();
       const idToken = response?.data?.idToken;
-      if (!idToken) {
-        throw new Error('Không thể lấy token từ Google Sign In');
-      }
-
-      const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+      const googleCredential = auth.GoogleAuthProvider.credential(idToken || '');
       const userCredential = await auth().signInWithCredential(googleCredential);
       const firebaseIdToken = await userCredential.user.getIdToken(true);
 
-      await sendIdTokenToBackend(firebaseIdToken);
-      navigation.navigate('Home');
+      const backendData = await sendIdTokenToBackendV2(firebaseIdToken);
+      await AsyncStorage.setItem('user', JSON.stringify(backendData.user));
+      
+      if (backendData.user.role === 'ADMIN') {
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'AdminRoot' }],
+          })
+        );
+      } else {
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'MainRoot' }],
+          })
+        );
+      }
     } catch (error: any) {
-      console.error('[GoogleSignIn Error]', error);
       setErrorPopup({
         visible: true,
         message: error.message || 'Không thể đăng nhập bằng Google. Vui lòng thử lại sau.',

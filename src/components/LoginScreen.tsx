@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {StyleSheet, View, Text, TouchableOpacity} from 'react-native';
+import {StyleSheet, View, Text, TouchableOpacity, Alert} from 'react-native';
 import CustomInput from './CustomInput';
 import CustomButton from './CustomButton';
 import SocialButton from './SocialButton';
@@ -71,52 +71,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
           );
         }
       } catch (error: any) {
-        console.error('[Auth Error]', error);
-        let errorMessage = 'Đăng nhập thất bại';
-        
-        switch (error.code) {
-          case 'auth/email-already-in-use':
-            try {
-              const existingUser = await auth().signInWithCredential(
-                auth.EmailAuthProvider.credential(email, password)
-              );
-              const idToken = await existingUser.user.getIdToken();
-              const backendData = await sendIdTokenToBackend(idToken, password);
-              if (backendData.user.role === 'ADMIN') {
-                navigation.dispatch(
-                  CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'AdminRoot' }],
-                  })
-                );
-              } else {
-                navigation.dispatch(
-                  CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'MainRoot' }],
-                  })
-                );
-              }
-              return;
-            } catch (signInError: any) {
-              errorMessage = 'Email hoặc mật khẩu không đúng';
-            }
-            break;
-          case 'auth/invalid-email':
-            errorMessage = 'Địa chỉ email không hợp lệ';
-            break;
-          case 'auth/operation-not-allowed':
-            errorMessage = 'Tài khoản email/mật khẩu chưa được kích hoạt. Vui lòng liên hệ hỗ trợ';
-            break;
-          case 'auth/weak-password':
-            errorMessage = 'Mật khẩu quá yếu. Vui lòng sử dụng mật khẩu mạnh hơn';
-            break;
-          default:
-            errorMessage = error.message;
-        }
         setErrorPopup({
           visible: true,
-          message: errorMessage,
+          message: 'Email hoặc mật khẩu không đúng. Vui lòng thử lại',
         });
       } finally {
         setLoading(false);
@@ -128,17 +85,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
     try {
       setLoading(true);
       await GoogleSignin.signOut();
-      
-      console.log('[GoogleSignIn] Checking Play Services...');
       await GoogleSignin.hasPlayServices();
-      console.log('[GoogleSignIn] Initiating sign-in...');
       const response = await GoogleSignin.signIn();
       const idToken = response?.data?.idToken;
-      if (!idToken) {
-        throw new Error('Không thể lấy token từ Google Sign In');
-      }
-
-      const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+      const googleCredential = auth.GoogleAuthProvider.credential(idToken || '');
       const userCredential = await auth().signInWithCredential(googleCredential);
       const firebaseIdToken = await userCredential.user.getIdToken(true);
 
@@ -185,27 +135,21 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
         },
       );
 
-      console.log('[Backend Response] Status:', response.status);
-      console.log('[Backend Response] Data:', response.data);
-
       if (response.data.token) {
-        console.log('[Auth] Received backend token');
+        await authStorage.storeTokens(
+          response.data.accessToken,
+          response.data.refreshToken,
+          response.data.user
+        );
       }
-      await authStorage.storeTokens(
-        response.data.accessToken,
-        response.data.refreshToken,
-        response.data.user
-      );
-
       return response.data;
     } catch (err: any) {
       if (axios.isAxiosError(err)) {
-        console.error('[Backend Error] Status:', err.response?.status);
-        console.error('[Backend Error] Data:', JSON.stringify(err.response?.data, null, 2));
-        console.error('[Backend Error] Message:', err.message);
-
         if (err.response?.status === 401) {
-          console.error('[Auth Error] Invalid token. Token details:');
+          setErrorPopup({
+            visible: true,
+            message: 'Email hoặc mật khẩu không đúng',
+          });
         } else if (err.code === 'ECONNABORTED') {
           setErrorPopup({
             visible: true,
@@ -237,9 +181,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
         });
       }
       throw err;
-    } finally {
-      console.log('[Backend Request] Finished', apiUrl);
-    }
+    } 
   };
 
   const sendIdTokenToBackendV2 = async (idToken: string) => {
@@ -256,29 +198,18 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
         },
       );
 
-      console.log('[Backend Response] Status:', response.status);
-      console.log('[Backend Response] Data:', response.data);
-
       if (response.data.token) {
-        console.log('[Auth] Received backend token');
+        await authStorage.storeTokens(
+          response.data.accessToken,
+          response.data.refreshToken,
+          response.data.user
+        );
       }
-      await authStorage.storeTokens(
-        response.data.accessToken,
-        response.data.refreshToken,
-        response.data.user
-      );
-
+     
       return response.data;
     } catch (err: any) {
       if (axios.isAxiosError(err)) {
-        console.error('[Backend Error] Status:', err.response?.status);
-        console.error('[Backend Error] Data:', JSON.stringify(err.response?.data, null, 2));
-        console.error('[Backend Error] Message:', err.message);
-
         if (err.response?.status === 401) {
-          console.error('[Auth Error] Invalid token. Token details:');
-          console.error('Token length:', idToken.length);
-          console.error('Token format:', idToken.split('.').length === 3 ? 'Valid JWT format' : 'Invalid JWT format');
           setErrorPopup({
             visible: true,
             message: 'Token xác thực không hợp lệ. Vui lòng thử đăng nhập lại',
@@ -314,8 +245,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
         });
       }
       throw err;
-    } finally {
-      console.log('[Backend Request] Finished', apiUrl);
     }
   };
 
