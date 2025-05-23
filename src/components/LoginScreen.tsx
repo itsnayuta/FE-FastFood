@@ -135,7 +135,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
         },
       );
 
-      if (response.data.token) {
+      if (response.data) {
         await authStorage.storeTokens(
           response.data.accessToken,
           response.data.refreshToken,
