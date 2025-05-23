@@ -1,12 +1,12 @@
-import React, {useState, useEffect} from 'react';
-import {StyleSheet, View, Text, TouchableOpacity, Alert} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, Alert } from 'react-native';
 import CustomInput from './CustomInput';
 import CustomButton from './CustomButton';
 import SocialButton from './SocialButton';
 import ErrorPopup from './ErrorPopup';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {ParamListBase, CommonActions} from '@react-navigation/native';
-import {GoogleSignin} from '@react-native-google-signin/google-signin';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { ParamListBase, CommonActions } from '@react-navigation/native';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import auth from '@react-native-firebase/auth';
 import Config from 'react-native-config';
 import axios from 'axios';
@@ -20,13 +20,13 @@ type LoginScreenProps = {
 const isValidEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
 const isValidPassword = (password: string) => password.length >= 6;
 
-const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
+const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [errorPopup, setErrorPopup] = useState({visible: false, message: ''});
+  const [errorPopup, setErrorPopup] = useState({ visible: false, message: '' });
 
   useEffect(() => {
     // Initialize Google Sign-In
@@ -37,6 +37,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
   }, []);
 
   const handleEmailPasswordLogin = async () => {
+    console.log('Login with email and password');
     setEmailError('');
     setPasswordError('');
     let isValid = true;
@@ -54,7 +55,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
     if (isValid) {
       setLoading(true);
       try {
-        const {user} = await sendIdTokenToBackend(email, password);
+        const { user } = await sendIdTokenToBackend(email, password);
+        console.log('authstorage access token: ', await authStorage.getAccessToken());
+        console.log('authstorage refresh token: ', await authStorage.getRefreshToken());
+        console.log('authstorage user: ', await authStorage.getUser());
         if (user.role === 'ADMIN') {
           navigation.dispatch(
             CommonActions.reset({
@@ -94,7 +98,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
 
       const backendData = await sendIdTokenToBackendV2(firebaseIdToken);
       await AsyncStorage.setItem('user', JSON.stringify(backendData.user));
-      
+
       if (backendData.user.role === 'ADMIN') {
         navigation.dispatch(
           CommonActions.reset({
@@ -126,7 +130,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
     try {
       const response = await axios.post(
         apiUrl,
-        {email, password},
+        { email, password },
         {
           headers: {
             'Content-Type': 'application/json',
@@ -134,14 +138,16 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
           timeout: 10000,
         },
       );
-
-      if (response.data.token) {
+      if (response.data) {
+        console.log('Calling sendIdTokenToBackend'); 4
         await authStorage.storeTokens(
           response.data.accessToken,
           response.data.refreshToken,
           response.data.user
         );
+        console.log('[Auth Storage] Tokens and user data stored successfully');
       }
+
       return response.data;
     } catch (err: any) {
       if (axios.isAxiosError(err)) {
@@ -158,9 +164,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
         } else if (err.response) {
           setErrorPopup({
             visible: true,
-            message: `Lỗi máy chủ (${err.response.status}): ${
-              err.response.data.message || 'Lỗi không xác định'
-            }`,
+            message: `Lỗi máy chủ (${err.response.status}): ${err.response.data.message || 'Lỗi không xác định'
+              }`,
           });
         } else if (err.request) {
           setErrorPopup({
@@ -181,7 +186,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
         });
       }
       throw err;
-    } 
+    }
   };
 
   const sendIdTokenToBackendV2 = async (idToken: string) => {
@@ -189,7 +194,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
     try {
       const response = await axios.post(
         apiUrl,
-        {idToken},
+        { idToken },
         {
           headers: {
             'Content-Type': 'application/json',
@@ -205,7 +210,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
           response.data.user
         );
       }
-     
+
       return response.data;
     } catch (err: any) {
       if (axios.isAxiosError(err)) {
@@ -222,9 +227,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
         } else if (err.response) {
           setErrorPopup({
             visible: true,
-            message: `Lỗi máy chủ (${err.response.status}): ${
-              err.response.data.message || 'Lỗi không xác định'
-            }`,
+            message: `Lỗi máy chủ (${err.response.status}): ${err.response.data.message || 'Lỗi không xác định'
+              }`,
           });
         } else if (err.request) {
           setErrorPopup({
@@ -312,7 +316,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
       <ErrorPopup
         visible={errorPopup.visible}
         message={errorPopup.message}
-        onClose={() => setErrorPopup({visible: false, message: ''})}
+        onClose={() => setErrorPopup({ visible: false, message: '' })}
       />
     </View>
   );
