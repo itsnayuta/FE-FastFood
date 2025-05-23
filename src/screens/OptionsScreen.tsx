@@ -12,6 +12,7 @@ type RootStackParamList = {
   SignupScreen: undefined;
   Menu: undefined;
   MenuMain: {initialTab: string};
+  ProfileScreen: undefined;
 };
 
 type NavigationProp = CompositeNavigationProp<
@@ -74,6 +75,7 @@ const OptionsScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const [menuFood, setismenufoodclicked] = useState(false);
   const [contactaboutus, setiscontactaboutusclicked] = useState(false);
+  const [userProfile, setUserProfile] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -169,6 +171,19 @@ const OptionsScreen = () => {
         items: [
           { label: 'Lịch Sử Đặt Hàng', onPress: () => {} },
           { label: 'Theo Dõi Đơn Hàng', onPress: () => {} },
+        ],
+      })}
+
+      {isLoggedIn && renderCollapsibleSection({
+        title: 'Tài Khoản',
+        isExpanded: userProfile,
+        setIsExpanded: setUserProfile,
+        items: [
+          { 
+            label: 'Thông Tin Cá Nhân', 
+            onPress: () => navigation.navigate('ProfileScreen')
+          },
+          { label: 'Cài Đặt', onPress: () => {} },
         ],
       })}
     </View>

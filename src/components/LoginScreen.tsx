@@ -4,7 +4,7 @@ import CustomInput from './CustomInput';
 import CustomButton from './CustomButton';
 import SocialButton from './SocialButton';
 import {StackNavigationProp} from '@react-navigation/stack';
-import {ParamListBase} from '@react-navigation/native';
+import {ParamListBase, CommonActions} from '@react-navigation/native';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import auth from '@react-native-firebase/auth';
 import Config from 'react-native-config';
@@ -55,9 +55,19 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
         const {user} = await sendIdTokenToBackend(email, password);
         Alert.alert('Success', 'Logged in successfully!');
         if (user.role === 'ADMIN') {
-          navigation.navigate('AdminRoot');
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'AdminRoot' }],
+            })
+          );
         } else {
-          navigation.navigate('MainRoot');
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'MainRoot' }],
+            })
+          );
         }
       } catch (error: any) {
         console.error('[Auth Error]', error);
@@ -74,9 +84,19 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
               const backendData = await sendIdTokenToBackend(idToken, password);
               Alert.alert('Success', 'Logged in successfully!');
               if (backendData.user.role === 'ADMIN') {
-                navigation.navigate('AdminRoot');
+                navigation.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: 'AdminRoot' }],
+                  })
+                );
               } else {
-                navigation.navigate('MainRoot');
+                navigation.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: 'MainRoot' }],
+                  })
+                );
               }
               return;
             } catch (signInError: any) {
@@ -120,14 +140,24 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
       const userCredential = await auth().signInWithCredential(googleCredential);
       const firebaseIdToken = await userCredential.user.getIdToken(true);
 
-      const backendData = await sendIdTokenToBackend(firebaseIdToken);
+      const backendData = await sendIdTokenToBackendV2(firebaseIdToken);
       await AsyncStorage.setItem('user', JSON.stringify(backendData.user));
       Alert.alert('Success', 'Logged in with Google successfully!');
       
       if (backendData.user.role === 'ADMIN') {
-        navigation.navigate('AdminRoot');
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'AdminRoot' }],
+          })
+        );
       } else {
-        navigation.navigate('MainRoot');
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'MainRoot' }],
+          })
+        );
       }
     } catch (error: any) {
       console.error('[GoogleSignIn Error]', error);
@@ -140,12 +170,78 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
     }
   };
 
-  const sendIdTokenToBackend = async (idToken: string, password?: string) => {
+  const sendIdTokenToBackend = async (email: string, password: string) => {
     const apiUrl = `${Config.API_BASE_URL}/auth/login`;
     try {
       const response = await axios.post(
         apiUrl,
         {email, password},
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          timeout: 10000,
+        },
+      );
+
+      console.log('[Backend Response] Status:', response.status);
+      console.log('[Backend Response] Data:', response.data);
+
+      if (response.data.token) {
+        console.log('[Auth] Received backend token');
+      }
+      await authStorage.storeTokens(
+              response.data.accessToken,
+              response.data.refreshToken,
+              response.data.user
+            );
+
+      return response.data;
+    } catch (err: any) {
+      if (axios.isAxiosError(err)) {
+        console.error('[Backend Error] Status:', err.response?.status);
+        console.error('[Backend Error] Data:', JSON.stringify(err.response?.data, null, 2));
+        console.error('[Backend Error] Message:', err.message);
+
+        // More specific error handling for 401
+        if (err.response?.status === 401) {
+          console.error('[Auth Error] Invalid token. Token details:');
+        } else if (err.code === 'ECONNABORTED') {
+          Alert.alert(
+            'Connection Timeout',
+            'The server is taking too long to respond. Please check your internet connection and try again.',
+          );
+        } else if (err.response) {
+          Alert.alert(
+            'Backend Error',
+            `Server Error (${err.response.status}): ${
+              err.response.data.message || 'Unknown error'
+            }`,
+          );
+        } else if (err.request) {
+          Alert.alert(
+            'Network Error',
+            'Could not connect to the server. Please check your internet connection and make sure the backend server is running.',
+          );
+        } else {
+          Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+        }
+      } else {
+        console.error('[Backend Error] Unknown:', err);
+        Alert.alert('Unexpected Error', 'Something went wrong. Please try again.');
+      }
+      throw err;
+    }finally {
+      console.log('[Backend Request] Finished', apiUrl);
+    }
+  };
+
+    const sendIdTokenToBackendV2 = async (idToken: string) => {
+    const apiUrl = `${Config.API_BASE_URL}/auth/oauth`;
+    try {
+      const response = await axios.post(
+        apiUrl,
+        {idToken},
         {
           headers: {
             'Content-Type': 'application/json',
@@ -253,17 +349,17 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
           disabled={loading}
         />
 
-        {/* <View style={styles.orContainer}>
+        <View style={styles.orContainer}>
           <View style={styles.divider} />
           <Text style={styles.orText}>hoặc</Text>
           <View style={styles.divider} />
-        </View> */}
+        </View>
 
-        {/* <SocialButton
+        <SocialButton
           title="Đăng nhập bằng Google"
           icon="google"
           onPress={handleGoogleSignIn}
-        /> */}
+        />
 
         <View style={styles.bottomTextContainer}>
           <Text style={styles.bottomText}>Chưa có tài khoản? </Text>

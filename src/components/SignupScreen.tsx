@@ -222,7 +222,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
 
         <View style={styles.bottomTextContainer}>
           <Text style={styles.bottomText}>Đã có tài khoản? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
+          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
             <Text style={styles.signInText}>Đăng nhập</Text>
           </TouchableOpacity>
         </View>

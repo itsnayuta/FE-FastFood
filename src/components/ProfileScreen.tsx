@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import CustomButton from './CustomButton';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { ParamListBase } from '@react-navigation/native';
+import { ParamListBase, useFocusEffect, CommonActions } from '@react-navigation/native';
 import OrderHistory from './OrderHistory';
 import { userService, UserProfile } from '../services/userService';
 import Config from 'react-native-config';
 import api from '../utils/api';
+import { authStorage } from '../utils/authStorage';
 
 type ProfileScreenProps = {
   navigation: StackNavigationProp<ParamListBase>;
@@ -38,13 +39,29 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
     }
   };
 
-  useEffect(() => {
-    fetchUserProfile();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchUserProfile();
+    }, [])
+  );
 
   const handleOrderPress = (orderId: string) => {
     // TODO: Navigate to order details
     console.log('Order pressed:', orderId);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await authStorage.removeTokens();
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'LoginScreen' }],
+        })
+      );
+    } catch (error) {
+      Alert.alert('Error', 'Failed to logout. Please try again.');
+    }
   };
 
   if (loading) {
@@ -116,6 +133,14 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           </TouchableOpacity>
         </View>
         <OrderHistory onOrderPress={handleOrderPress} />
+      </View>
+
+      <View style={styles.logoutContainer}>
+        <CustomButton
+          title="Logout"
+          onPress={handleLogout}
+          primary={false}
+        />
       </View>
     </ScrollView>
   );
@@ -245,6 +270,10 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: 16,
     textAlign: 'center',
+  },
+  logoutContainer: {
+    padding: 24,
+    paddingTop: 0,
   },
 });
 

@@ -167,17 +167,19 @@ const UpdateProfileScreen: React.FC<UpdateProfileScreenProps> = ({ navigation })
         keyboardType="phone-pad"
         editable={!saving}
       />
-      <CustomButton 
-        title={saving ? "Saving..." : "Save"} 
-        onPress={handleSave} 
-        primary 
-        disabled={saving}
-      />
-      <CustomButton 
-        title="Cancel" 
-        onPress={() => navigation.goBack()} 
-        disabled={saving}
-      />
+      <View style={styles.buttonContainer}>
+        <CustomButton 
+          title={saving ? "Saving..." : "Save"} 
+          onPress={handleSave} 
+          primary 
+          disabled={saving}
+        />
+        <CustomButton 
+          title="Cancel" 
+          onPress={() => navigation.goBack()} 
+          disabled={saving}
+        />
+      </View>
     </View>
   );
 };
@@ -247,6 +249,10 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: 16,
     textAlign: 'center',
+  },
+  buttonContainer: {
+    gap: 12,
+    marginTop: 24,
   },
 });
 

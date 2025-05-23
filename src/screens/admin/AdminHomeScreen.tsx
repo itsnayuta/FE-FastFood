@@ -1,7 +1,10 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Alert } from "react-native";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { CommonActions } from '@react-navigation/native';
+import { authStorage } from '../../utils/authStorage';
+import CustomButton from '../../components/CustomButton';
 
 type AdminTabParamList = {
     'Admin Home': undefined;
@@ -33,6 +36,20 @@ const AdminHomeScreen: React.FC<AdminHomeScreenProps> = ({ navigation }) => {
         }
     ];
 
+    const handleLogout = async () => {
+        try {
+            await authStorage.removeTokens();
+            navigation.dispatch(
+                CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: 'Login' }],
+                })
+            );
+        } catch (error) {
+            Alert.alert('Error', 'Failed to logout. Please try again.');
+        }
+    };
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
@@ -54,6 +71,14 @@ const AdminHomeScreen: React.FC<AdminHomeScreenProps> = ({ navigation }) => {
                         <Ionicons name="chevron-forward" size={20} color="#666" />
                     </TouchableOpacity>
                 ))}
+            </View>
+
+            <View style={styles.logoutContainer}>
+                <CustomButton
+                    title="Đăng xuất"
+                    onPress={handleLogout}
+                    primary={false}
+                />
             </View>
         </SafeAreaView>
     );
@@ -117,5 +142,9 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#333',
         fontWeight: '500'
+    },
+    logoutContainer: {
+        padding: 16,
+        marginTop: 'auto'
     }
 });
