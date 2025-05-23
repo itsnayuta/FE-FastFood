@@ -1,8 +1,9 @@
 import React, {useState} from 'react';
-import {StyleSheet, View, Text, TouchableOpacity, Alert} from 'react-native';
+import {StyleSheet, View, Text, TouchableOpacity} from 'react-native';
 import CustomInput from './CustomInput';
 import CustomButton from './CustomButton';
 import SocialButton from './SocialButton';
+import ErrorPopup from './ErrorPopup';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {ParamListBase} from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
@@ -22,6 +23,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [loading, setLoading] = useState(false);
+  const [errorPopup, setErrorPopup] = useState({visible: false, message: ''});
 
   // ✅ Validate fields before submission
   const validateForm = () => {
@@ -55,7 +57,8 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
           },
           timeout: 10000,
         },
-      );      console.log('[Auth] Received response:', response.data);
+      );
+      console.log('[Auth] Received response:', response.data);
       await authStorage.storeTokens(
         response.data.accessToken,
         response.data.refreshToken,
@@ -64,10 +67,10 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
       return response.data;
     } catch (err: any) {
       if (axios.isAxiosError(err)) {
-        Alert.alert(
-          'Backend Error',
-          err.response?.data?.message || 'Failed to communicate with server',
-        );
+        setErrorPopup({
+          visible: true,
+          message: err.response?.data?.message || 'Không thể kết nối với máy chủ. Vui lòng thử lại sau.',
+        });
       }
       throw err;
     }
@@ -79,7 +82,6 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
       setLoading(true);
       try {
         const {user} = await sendIdTokenToBackend(name, email, password);
-        Alert.alert('Success', 'Logged in successfully!');
         if (user.role === 'ADMIN') {
           navigation.navigate('AdminRoot');
         } else {
@@ -87,25 +89,26 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
         }
       } catch (error: any) {
         console.error('[Signup Error]', error);
-        let errorMessage = 'Failed to create account';
+        let errorMessage = 'Không thể tạo tài khoản';
 
         switch (error.code) {
           case 'auth/email-already-in-use':
-            errorMessage =
-              'This email is already registered. Please try logging in.';
+            errorMessage = 'Email này đã được đăng ký. Vui lòng thử đăng nhập.';
             break;
           case 'auth/invalid-email':
-            errorMessage = 'The email address is invalid.';
+            errorMessage = 'Địa chỉ email không hợp lệ.';
             break;
           case 'auth/weak-password':
-            errorMessage =
-              'Password is too weak. Please use a stronger password.';
+            errorMessage = 'Mật khẩu quá yếu. Vui lòng sử dụng mật khẩu mạnh hơn.';
             break;
           default:
             errorMessage = error.message;
         }
 
-        Alert.alert('Error', errorMessage);
+        setErrorPopup({
+          visible: true,
+          message: errorMessage,
+        });
       } finally {
         setLoading(false);
       }
@@ -115,7 +118,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
-      await GoogleSignin.signOut(); // Clear any existing session
+      await GoogleSignin.signOut();
 
       console.log('[GoogleSignIn] Checking Play Services...');
       await GoogleSignin.hasPlayServices();
@@ -123,24 +126,21 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
       const response = await GoogleSignin.signIn();
       const idToken = response?.data?.idToken;
       if (!idToken) {
-        throw new Error('Failed to get ID token from Google Sign In');
+        throw new Error('Không thể lấy token từ Google Sign In');
       }
 
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-      const userCredential =
-        await auth().signInWithCredential(googleCredential);
+      const userCredential = await auth().signInWithCredential(googleCredential);
       const firebaseIdToken = await userCredential.user.getIdToken(true);
 
       await sendIdTokenToBackend(firebaseIdToken);
-
-      Alert.alert('Success', 'Logged in with Google successfully!');
-      navigation.navigate('Home'); // Navigate to home screen
+      navigation.navigate('Home');
     } catch (error: any) {
       console.error('[GoogleSignIn Error]', error);
-      Alert.alert(
-        'Sign In Error',
-        error.message || 'Failed to sign in with Google',
-      );
+      setErrorPopup({
+        visible: true,
+        message: error.message || 'Không thể đăng nhập bằng Google. Vui lòng thử lại sau.',
+      });
     } finally {
       setLoading(false);
     }
@@ -227,6 +227,12 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
           </TouchableOpacity>
         </View>
       </View>
+
+      <ErrorPopup
+        visible={errorPopup.visible}
+        message={errorPopup.message}
+        onClose={() => setErrorPopup({visible: false, message: ''})}
+      />
     </View>
   );
 };

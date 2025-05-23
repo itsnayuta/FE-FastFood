@@ -1,8 +1,9 @@
 import React, {useState, useEffect} from 'react';
-import {StyleSheet, View, Text, TouchableOpacity, Alert} from 'react-native';
+import {StyleSheet, View, Text, TouchableOpacity} from 'react-native';
 import CustomInput from './CustomInput';
 import CustomButton from './CustomButton';
 import SocialButton from './SocialButton';
+import ErrorPopup from './ErrorPopup';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {ParamListBase, CommonActions} from '@react-navigation/native';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
@@ -25,6 +26,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorPopup, setErrorPopup] = useState({visible: false, message: ''});
 
   useEffect(() => {
     // Initialize Google Sign-In
@@ -40,12 +42,12 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
     let isValid = true;
 
     if (!isValidEmail(email)) {
-      setEmailError('Invalid email address');
+      setEmailError('Email không hợp lệ');
       isValid = false;
     }
 
     if (!isValidPassword(password)) {
-      setPasswordError('Password must be at least 6 characters');
+      setPasswordError('Mật khẩu phải có ít nhất 6 ký tự');
       isValid = false;
     }
 
@@ -53,7 +55,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
       setLoading(true);
       try {
         const {user} = await sendIdTokenToBackend(email, password);
-        Alert.alert('Success', 'Logged in successfully!');
         if (user.role === 'ADMIN') {
           navigation.dispatch(
             CommonActions.reset({
@@ -71,18 +72,16 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
         }
       } catch (error: any) {
         console.error('[Auth Error]', error);
-        let errorMessage = 'Authentication failed';
+        let errorMessage = 'Đăng nhập thất bại';
         
         switch (error.code) {
           case 'auth/email-already-in-use':
-            // If account exists, try to sign in instead
             try {
               const existingUser = await auth().signInWithCredential(
                 auth.EmailAuthProvider.credential(email, password)
               );
               const idToken = await existingUser.user.getIdToken();
               const backendData = await sendIdTokenToBackend(idToken, password);
-              Alert.alert('Success', 'Logged in successfully!');
               if (backendData.user.role === 'ADMIN') {
                 navigation.dispatch(
                   CommonActions.reset({
@@ -100,22 +99,25 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
               }
               return;
             } catch (signInError: any) {
-              errorMessage = 'Invalid email or password';
+              errorMessage = 'Email hoặc mật khẩu không đúng';
             }
             break;
           case 'auth/invalid-email':
-            errorMessage = 'The email address is invalid.';
+            errorMessage = 'Địa chỉ email không hợp lệ';
             break;
           case 'auth/operation-not-allowed':
-            errorMessage = 'Email/password accounts are not enabled. Please contact support.';
+            errorMessage = 'Tài khoản email/mật khẩu chưa được kích hoạt. Vui lòng liên hệ hỗ trợ';
             break;
           case 'auth/weak-password':
-            errorMessage = 'The password is too weak. Please use a stronger password.';
+            errorMessage = 'Mật khẩu quá yếu. Vui lòng sử dụng mật khẩu mạnh hơn';
             break;
           default:
             errorMessage = error.message;
         }
-        Alert.alert('Error', errorMessage);
+        setErrorPopup({
+          visible: true,
+          message: errorMessage,
+        });
       } finally {
         setLoading(false);
       }
@@ -125,7 +127,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
-      await GoogleSignin.signOut(); // Clear any existing session
+      await GoogleSignin.signOut();
       
       console.log('[GoogleSignIn] Checking Play Services...');
       await GoogleSignin.hasPlayServices();
@@ -133,7 +135,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
       const response = await GoogleSignin.signIn();
       const idToken = response?.data?.idToken;
       if (!idToken) {
-        throw new Error('Failed to get ID token from Google Sign In');
+        throw new Error('Không thể lấy token từ Google Sign In');
       }
 
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
@@ -142,7 +144,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
 
       const backendData = await sendIdTokenToBackendV2(firebaseIdToken);
       await AsyncStorage.setItem('user', JSON.stringify(backendData.user));
-      Alert.alert('Success', 'Logged in with Google successfully!');
       
       if (backendData.user.role === 'ADMIN') {
         navigation.dispatch(
@@ -161,10 +162,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
       }
     } catch (error: any) {
       console.error('[GoogleSignIn Error]', error);
-      Alert.alert(
-        'Sign In Error',
-        error.message || 'Failed to sign in with Google'
-      );
+      setErrorPopup({
+        visible: true,
+        message: error.message || 'Không thể đăng nhập bằng Google. Vui lòng thử lại sau',
+      });
     } finally {
       setLoading(false);
     }
@@ -191,10 +192,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
         console.log('[Auth] Received backend token');
       }
       await authStorage.storeTokens(
-              response.data.accessToken,
-              response.data.refreshToken,
-              response.data.user
-            );
+        response.data.accessToken,
+        response.data.refreshToken,
+        response.data.user
+      );
 
       return response.data;
     } catch (err: any) {
@@ -203,40 +204,45 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
         console.error('[Backend Error] Data:', JSON.stringify(err.response?.data, null, 2));
         console.error('[Backend Error] Message:', err.message);
 
-        // More specific error handling for 401
         if (err.response?.status === 401) {
           console.error('[Auth Error] Invalid token. Token details:');
         } else if (err.code === 'ECONNABORTED') {
-          Alert.alert(
-            'Connection Timeout',
-            'The server is taking too long to respond. Please check your internet connection and try again.',
-          );
+          setErrorPopup({
+            visible: true,
+            message: 'Máy chủ phản hồi quá lâu. Vui lòng kiểm tra kết nối internet và thử lại',
+          });
         } else if (err.response) {
-          Alert.alert(
-            'Backend Error',
-            `Server Error (${err.response.status}): ${
-              err.response.data.message || 'Unknown error'
+          setErrorPopup({
+            visible: true,
+            message: `Lỗi máy chủ (${err.response.status}): ${
+              err.response.data.message || 'Lỗi không xác định'
             }`,
-          );
+          });
         } else if (err.request) {
-          Alert.alert(
-            'Network Error',
-            'Could not connect to the server. Please check your internet connection and make sure the backend server is running.',
-          );
+          setErrorPopup({
+            visible: true,
+            message: 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet và đảm bảo máy chủ đang hoạt động',
+          });
         } else {
-          Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+          setErrorPopup({
+            visible: true,
+            message: 'Đã xảy ra lỗi không mong muốn. Vui lòng thử lại',
+          });
         }
       } else {
         console.error('[Backend Error] Unknown:', err);
-        Alert.alert('Unexpected Error', 'Something went wrong. Please try again.');
+        setErrorPopup({
+          visible: true,
+          message: 'Đã xảy ra lỗi không mong muốn. Vui lòng thử lại',
+        });
       }
       throw err;
-    }finally {
+    } finally {
       console.log('[Backend Request] Finished', apiUrl);
     }
   };
 
-    const sendIdTokenToBackendV2 = async (idToken: string) => {
+  const sendIdTokenToBackendV2 = async (idToken: string) => {
     const apiUrl = `${Config.API_BASE_URL}/auth/oauth`;
     try {
       const response = await axios.post(
@@ -257,10 +263,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
         console.log('[Auth] Received backend token');
       }
       await authStorage.storeTokens(
-              response.data.accessToken,
-              response.data.refreshToken,
-              response.data.user
-            );
+        response.data.accessToken,
+        response.data.refreshToken,
+        response.data.user
+      );
 
       return response.data;
     } catch (err: any) {
@@ -269,41 +275,46 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
         console.error('[Backend Error] Data:', JSON.stringify(err.response?.data, null, 2));
         console.error('[Backend Error] Message:', err.message);
 
-        // More specific error handling for 401
         if (err.response?.status === 401) {
           console.error('[Auth Error] Invalid token. Token details:');
           console.error('Token length:', idToken.length);
           console.error('Token format:', idToken.split('.').length === 3 ? 'Valid JWT format' : 'Invalid JWT format');
-          Alert.alert(
-            'Authentication Error',
-            'Invalid authentication token. Please try signing in again.',
-          );
+          setErrorPopup({
+            visible: true,
+            message: 'Token xác thực không hợp lệ. Vui lòng thử đăng nhập lại',
+          });
         } else if (err.code === 'ECONNABORTED') {
-          Alert.alert(
-            'Connection Timeout',
-            'The server is taking too long to respond. Please check your internet connection and try again.',
-          );
+          setErrorPopup({
+            visible: true,
+            message: 'Máy chủ phản hồi quá lâu. Vui lòng kiểm tra kết nối internet và thử lại',
+          });
         } else if (err.response) {
-          Alert.alert(
-            'Backend Error',
-            `Server Error (${err.response.status}): ${
-              err.response.data.message || 'Unknown error'
+          setErrorPopup({
+            visible: true,
+            message: `Lỗi máy chủ (${err.response.status}): ${
+              err.response.data.message || 'Lỗi không xác định'
             }`,
-          );
+          });
         } else if (err.request) {
-          Alert.alert(
-            'Network Error',
-            'Could not connect to the server. Please check your internet connection and make sure the backend server is running.',
-          );
+          setErrorPopup({
+            visible: true,
+            message: 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet và đảm bảo máy chủ đang hoạt động',
+          });
         } else {
-          Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+          setErrorPopup({
+            visible: true,
+            message: 'Đã xảy ra lỗi không mong muốn. Vui lòng thử lại',
+          });
         }
       } else {
         console.error('[Backend Error] Unknown:', err);
-        Alert.alert('Unexpected Error', 'Something went wrong. Please try again.');
+        setErrorPopup({
+          visible: true,
+          message: 'Đã xảy ra lỗi không mong muốn. Vui lòng thử lại',
+        });
       }
       throw err;
-    }finally {
+    } finally {
       console.log('[Backend Request] Finished', apiUrl);
     }
   };
@@ -368,6 +379,12 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
           </TouchableOpacity>
         </View>
       </View>
+
+      <ErrorPopup
+        visible={errorPopup.visible}
+        message={errorPopup.message}
+        onClose={() => setErrorPopup({visible: false, message: ''})}
+      />
     </View>
   );
 };
