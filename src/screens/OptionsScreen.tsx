@@ -70,7 +70,7 @@ const renderCollapsibleSection = ({
 
 
 const OptionsScreen = () => {
-  const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<any>();
   const [menuFood, setismenufoodclicked] = useState(false);
   const [contactaboutus, setiscontactaboutusclicked] = useState(false);
 
@@ -149,8 +149,8 @@ const OptionsScreen = () => {
         isExpanded: contactaboutus,
         setIsExpanded: setiscontactaboutusclicked,
         items: [
-          { label: 'Lịch Sử Đặt Hàng', onPress: () => {} },
-          { label: 'Theo Dõi Đơn Hàng', onPress: () => {} },
+
+          { label: 'Theo Dõi Đơn Hàng', onPress: () => {navigation.navigate('OrderTracking')} },
         ],
       })}
     </View>

@@ -18,7 +18,8 @@ import LoginScreen from "../components/LoginScreen";
 import SignupScreen from "../components/SignupScreen";
 import ProfileScreen from "../components/ProfileScreen";
 import UpdateProfileScreen from "../components/UpdateProfileScreen";
-
+import OrderTracking from "../screens/OrderTracking";
+import OrderTrackingDetail from "../screens/OrderTrackingDetail";
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
@@ -66,6 +67,8 @@ const OptionsStack = () => {
                 name="SignupScreen" 
                 component={SignupScreen} 
             />
+            <Stack.Screen name="OrderTracking" component={OrderTracking} />
+            <Stack.Screen name="OrderTrackingDetail" component={OrderTrackingDetail} />
         </Stack.Navigator>
     );
 };
@@ -99,6 +102,7 @@ const MainNavigator = () => {
                     component={OptionsStack}
                     options={{ headerShown: false }}
                 />
+                
             </Tab.Navigator>
         </>
     );
