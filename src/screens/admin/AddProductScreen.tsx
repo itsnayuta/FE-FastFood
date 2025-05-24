@@ -8,25 +8,28 @@ import {
     SafeAreaView,
     ScrollView,
     Alert,
-    Image
+    Image,
+    ActivityIndicator,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import api from '../../utils/api';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 const AddProductScreen = () => {
     const navigation = useNavigation();
+    const route = useRoute();
+    const { categoryId } = (route.params as { categoryId?: number }) || {};
+    console.log('Category ID:', categoryId);
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState('');
     const [imageUrl, setImageUrl] = useState('');
-    const [categoryId, setCategoryId] = useState('');
     const [size, setSize] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleAddProduct = async () => {
         if (!name || !description || !price || !imageUrl || !categoryId || !size) {
-            Alert.alert('Error', 'Please fill in all fields');
+            Alert.alert('Lỗi', 'Vui lòng điền đầy đủ thông tin');
             return;
         }
 
@@ -37,16 +40,17 @@ const AddProductScreen = () => {
                 description,
                 price: parseFloat(price),
                 imageUrl,
-                categoryId: parseInt(categoryId),
-                size
+                categoryId: categoryId,
+                size,
             };
+            console.log('Product Data:', productData);
 
             await api.post('/admin/products', productData);
-            Alert.alert('Success', 'Product added successfully');
+            Alert.alert('Thành công', 'Đã thêm sản phẩm');
             navigation.goBack();
         } catch (error) {
-            console.error('Error adding product:', error);
-            Alert.alert('Error', 'Failed to add product. Please try again.');
+            console.error('Lỗi khi thêm sản phẩm:', error);
+            Alert.alert('Lỗi', 'Không thể thêm sản phẩm. Vui lòng thử lại.');
         } finally {
             setLoading(false);
         }
@@ -54,164 +58,54 @@ const AddProductScreen = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
-                >
-                    <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
-                </TouchableOpacity>
-                <Text style={styles.title}>Add New Product</Text>
-            </View>
+            <ScrollView contentContainerStyle={styles.form}>
+                <Text style={styles.label}>Tên sản phẩm</Text>
+                <TextInput style={styles.input} value={name} onChangeText={setName} />
 
-            <ScrollView style={styles.form}>
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Product Name</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={name}
-                        onChangeText={setName}
-                        placeholder="Enter product name"
-                    />
-                </View>
+                <Text style={styles.label}>Mô tả</Text>
+                <TextInput style={styles.input} value={description} onChangeText={setDescription} />
 
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Description</Text>
-                    <TextInput
-                        style={[styles.input, styles.textArea]}
-                        value={description}
-                        onChangeText={setDescription}
-                        placeholder="Enter product description"
-                        multiline
-                        numberOfLines={4}
-                    />
-                </View>
+                <Text style={styles.label}>Giá</Text>
+                <TextInput style={styles.input} value={price} onChangeText={setPrice} keyboardType="numeric" />
 
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Price</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={price}
-                        onChangeText={setPrice}
-                        placeholder="Enter price"
-                        keyboardType="numeric"
-                    />
-                </View>
+                <Text style={styles.label}>Hình ảnh (URL)</Text>
+                <TextInput style={styles.input} value={imageUrl} onChangeText={setImageUrl} />
 
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Image URL</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={imageUrl}
-                        onChangeText={setImageUrl}
-                        placeholder="Enter image URL"
-                    />
-                </View>
+                <Text style={styles.label}>Kích thước</Text>
+                <TextInput style={styles.input} value={size} onChangeText={setSize} />
 
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Category ID</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={categoryId}
-                        onChangeText={setCategoryId}
-                        placeholder="Enter category ID"
-                        keyboardType="numeric"
-                    />
-                </View>
-
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Size</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={size}
-                        onChangeText={setSize}
-                        placeholder="Enter size (e.g., S, M, L)"
-                    />
-                </View>
-
-                <TouchableOpacity
-                    style={[styles.addButton, loading && styles.disabledButton]}
-                    onPress={handleAddProduct}
-                    disabled={loading}
-                >
-                    <Text style={styles.addButtonText}>
-                        {loading ? 'Adding...' : 'Add Product'}
-                    </Text>
-                </TouchableOpacity>
+                {loading ? (
+                    <ActivityIndicator size="large" color="#4A90E2" style={{ marginTop: 20 }} />
+                ) : (
+                    <TouchableOpacity style={styles.button} onPress={handleAddProduct}>
+                        <Text style={styles.buttonText}>Thêm sản phẩm</Text>
+                    </TouchableOpacity>
+                )}
             </ScrollView>
         </SafeAreaView>
     );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#F5F6FA'
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 20,
-        backgroundColor: '#4A90E2',
-        borderBottomLeftRadius: 20,
-        borderBottomRightRadius: 20,
-    },
-    backButton: {
-        marginRight: 16
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#FFFFFF'
-    },
-    form: {
-        flex: 1,
-        padding: 20
-    },
-    inputGroup: {
-        marginBottom: 20
-    },
-    label: {
-        fontSize: 16,
-        fontWeight: '500',
-        color: '#333',
-        marginBottom: 8
-    },
+    container: { flex: 1, backgroundColor: '#F5F6FA' },
+    form: { padding: 20 },
+    label: { fontSize: 16, fontWeight: '500', marginTop: 16 },
     input: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 12,
-        padding: 16,
-        fontSize: 16,
-        color: '#333',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 5,
+        borderWidth: 1,
+        borderColor: '#CCC',
+        borderRadius: 8,
+        padding: 12,
+        backgroundColor: '#FFF',
+        marginTop: 8,
     },
-    textArea: {
-        height: 100,
-        textAlignVertical: 'top'
-    },
-    addButton: {
+    button: {
+        marginTop: 24,
         backgroundColor: '#4A90E2',
-        borderRadius: 12,
         padding: 16,
+        borderRadius: 10,
         alignItems: 'center',
-        marginTop: 20,
-        marginBottom: 40
     },
-    disabledButton: {
-        opacity: 0.7
-    },
-    addButtonText: {
-        color: '#FFFFFF',
-        fontSize: 18,
-        fontWeight: 'bold'
-    }
+    buttonText: { color: '#FFF', fontSize: 16, fontWeight: '600' },
 });
 
-export default AddProductScreen; 
+export default AddProductScreen;
