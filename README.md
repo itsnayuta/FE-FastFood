@@ -340,9 +340,8 @@
 </div>
 
 ## Nguồn tham khảo giao diện
-- Link 1
-- Link 2
-- Link 3
+- [Fast Food KFC Hà Đông](https://www.foody.vn/ha-noi/ga-ran-kfc-quang-trung-ha-dong)
+- [Shopee Food KFC](https://shopeefood.vn/thuong-hieu/kfc-ha-noi)
 
 
 ## Hướng dẫn cài đặt
