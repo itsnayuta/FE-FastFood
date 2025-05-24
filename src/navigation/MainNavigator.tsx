@@ -18,6 +18,7 @@ import LoginScreen from "../components/LoginScreen";
 import SignupScreen from "../components/SignupScreen";
 import ProfileScreen from "../components/ProfileScreen";
 import UpdateProfileScreen from "../components/UpdateProfileScreen";
+import OrderHistoryScreen from "../screens/OrderHistoryScreen";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -65,6 +66,10 @@ const OptionsStack = () => {
             <Stack.Screen 
                 name="SignupScreen" 
                 component={SignupScreen} 
+            />
+            <Stack.Screen 
+                name="OrderHistory" 
+                component={OrderHistoryScreen} 
             />
         </Stack.Navigator>
     );

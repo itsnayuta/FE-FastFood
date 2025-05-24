@@ -7,12 +7,23 @@ import type {BottomTabNavigationProp} from '@react-navigation/bottom-tabs';
 import type {StackNavigationProp} from '@react-navigation/stack';
 import { authStorage } from '../utils/authStorage';
 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    padding: 20,
+  },
+});
+
 type RootStackParamList = {
   LoginScreen: undefined;
   SignupScreen: undefined;
   Menu: undefined;
   MenuMain: {initialTab: string};
   ProfileScreen: undefined;
+  OrderHistory: undefined;
+  OrderDetails: {orderId: string};
+  UpdateProfileScreen: undefined;
 };
 
 type NavigationProp = CompositeNavigationProp<
@@ -70,7 +81,6 @@ const renderCollapsibleSection = ({
   </View>
 );
 
-
 const OptionsScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const [menuFood, setismenufoodclicked] = useState(false);
@@ -93,7 +103,6 @@ const OptionsScreen = () => {
   };
 
   return (
-  <>
     <View style={styles.container}>
       {!isLoggedIn && (
         <View style={{ flex: 0, gap: 5, marginBottom: 60 }}>
@@ -137,8 +146,50 @@ const OptionsScreen = () => {
                 })
               ),
           },
-          { label: 'Combo nhóm', onPress: () => {} },
-          { label: 'Gà Rán - Gà Quay', onPress: () => {} },
+          { 
+            label: 'Combo nhóm', 
+            onPress: () =>
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [
+                    {
+                      name: 'Menu',
+                      state: {
+                        routes: [
+                          {
+                            name: 'MenuMain',
+                            params: { initialTab: 'Combo nhóm' },
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                })
+              ),
+          },
+          { 
+            label: 'Gà Rán - Gà Quay', 
+            onPress: () =>
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [
+                    {
+                      name: 'Menu',
+                      state: {
+                        routes: [
+                          {
+                            name: 'MenuMain',
+                            params: { initialTab: 'Gà rán - Gà quay' },
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                })
+              ),
+          },
           {
             label: 'Thức Ăn Nhẹ',
             onPress: () =>
@@ -169,8 +220,14 @@ const OptionsScreen = () => {
         isExpanded: contactaboutus,
         setIsExpanded: setiscontactaboutusclicked,
         items: [
-          { label: 'Lịch Sử Đặt Hàng', onPress: () => {} },
-          { label: 'Theo Dõi Đơn Hàng', onPress: () => {} },
+          { 
+            label: 'Lịch Sử Đặt Hàng', 
+            onPress: () => navigation.navigate('OrderHistory')
+          },
+          { 
+            label: 'Theo Dõi Đơn Hàng', 
+            onPress: () => navigation.navigate('OrderHistory')
+          },
         ],
       })}
 
@@ -183,21 +240,14 @@ const OptionsScreen = () => {
             label: 'Thông Tin Cá Nhân', 
             onPress: () => navigation.navigate('ProfileScreen')
           },
-          { label: 'Cài Đặt', onPress: () => {} },
+          { 
+            label: 'Cập Nhật Thông Tin', 
+            onPress: () => navigation.navigate('UpdateProfileScreen')
+          },
         ],
       })}
     </View>
-  </>
-);
-
+  );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 20,
-  },
-});
 
 export default OptionsScreen;

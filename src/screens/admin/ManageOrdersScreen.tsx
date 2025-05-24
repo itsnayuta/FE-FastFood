@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, SafeArea
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Order } from "../../types";
 import { getAllOrders } from '../../services/api';
+import { getOrdersByMemberId } from '../../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const ManageOrdersScreen = () => {
     const [orders, setOrders] = useState<Order[]>([]);
@@ -18,6 +19,23 @@ const ManageOrdersScreen = () => {
     };
     fetchOrders();
 }, []);
+    const [user, setUser] = useState<any>({});
+    const [memberId, setMemberId] = useState<string | undefined>(undefined);
+
+    useEffect(() => {
+        const fetchOrders = async () => {
+            setLoading(true);
+            const userStr = await AsyncStorage.getItem('user');
+            const user = userStr ? JSON.parse(userStr) : {};
+            const memberId = user.id || user.memberId;
+            if (memberId) {
+                const ordersData = await getOrdersByMemberId(memberId);
+                setOrders(ordersData);
+            }
+            setLoading(false);
+        };
+        fetchOrders();
+    }, []);
 
     const getStatusColor = (status: string) => {
         switch (status) {

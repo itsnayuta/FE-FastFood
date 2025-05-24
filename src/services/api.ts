@@ -105,6 +105,7 @@ export const processOrder = async (orderPayload: any) => {
     }
 };
 
+
 export const getAllOrders = async () => {
     try {
         const response = await api.get('/orders');
@@ -114,3 +115,37 @@ export const getAllOrders = async () => {
         return [];
     }
 };
+// tạo combo
+export const createComboWithProducts = async (comboData: any) => {
+  try {
+    const response = await api.post('admin/combos', comboData);
+    console.log('Created Combo:', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error creating combo:', error?.message || error);
+    throw error;
+  }
+};
+
+// Xóa combo theo id
+export const deleteCombo = async (comboId: number) => {
+  try {
+    const response = await api.delete(`admin/combos/${comboId}`);
+    console.log('Delete combo response:', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error deleting combo:', error?.message || error);
+    throw error;
+  }
+};
+
+export const getOrdersByMemberId = async (memberId: number) => {
+    try {
+        const response = await api.get(`/orders/member/${memberId}`);
+        return response.data;
+    } catch (error: any) {
+        console.error('Error fetching orders by memberId:', error?.message || error);
+        return [];
+    }
+};
+

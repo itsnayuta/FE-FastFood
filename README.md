@@ -11,7 +11,7 @@
 
 | Họ và tên         | Mã sinh viên | Phân công                                                                                                                                                                  |
 | ----------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Nguyễn Tiến Thành**  | B21DCCN679   | Backend: Quản lý người dùng (đăng ký, đăng nhập, phân quyền, hồ sơ cá nhân). Frontend: Giao diện đăng nhập, đăng ký, cập nhật hồ sơ, quản lý địa chỉ.                      |
+| **Nguyễn Tiến Thành**  | B21DCCN679   | Backend: Quản lý người dùng (đăng ký, đăng nhập, phân quyền, hồ sơ cá nhân). Frontend: Giao diện onboarding, đăng nhập, đăng ký, cập nhật hồ sơ, lịch sử đặt hàng, amdin quản ký user, admin home.                      |
 | **Phạm Quang Huy**  | B21DCCN439   | Backend: Quản lý sản phẩm (CRUD sản phẩm, danh mục, combo). Frontend: Hiển thị danh sách sản phẩm, chi tiết sản phẩm, tìm kiếm.                                            |
 | **Đào Tùng Lâm** | B21DCCN475   | Backend: Quản lý đơn hàng (tạo đơn, cập nhật trạng thái, lưu lịch sử). Frontend:Giao diện Home , Giao diện Giỏ hàng, Tìm kiếm món ăn, Xử lý logic thêm giỏ hàng                                |
 | **Nguyễn Thành Long**  | B21DCCN499   | Backend: Tích hợp thanh toán (MOMO, thẻ ngân hàng), khuyến mãi, báo cáo doanh thu. Frontend: Giao diện thanh toán, nhập mã giảm giá, hiển thị thông tin ưu đãi và voucher. |
