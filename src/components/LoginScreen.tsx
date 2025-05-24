@@ -97,6 +97,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       const firebaseIdToken = await userCredential.user.getIdToken(true);
 
       const backendData = await sendIdTokenToBackendV2(firebaseIdToken);
+  
       await AsyncStorage.setItem('user', JSON.stringify(backendData.user));
 
       if (backendData.user.role === 'ADMIN') {
@@ -202,12 +203,14 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         },
       );
 
-      if (response.data.token) {
+      console.log('[Backend Data] ', response);
+      if (response.data) {
         await authStorage.storeTokens(
           response.data.accessToken,
           response.data.refreshToken,
           response.data.user
         );
+        console.log('[Auth Storage] Tokens and user data stored successfully');
       }
 
       return response.data;
