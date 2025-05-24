@@ -28,7 +28,7 @@
   - IntelliJ IDEA / Spring Tool Suite: Phát triển backend Spring Boot  
 
 - **Ngôn ngữ lập trình**:  
-  - JavaScript (React Native)  
+  - TypeScript (React Native)  
   - Java (Spring Boot)
 
 - **Kiến trúc hệ thống**:  
@@ -55,7 +55,6 @@
   - **Frontend (React Native)**:  
     - axios: Gọi API backend  
     - nativewind: Sử dụng Tailwind trong React Native  
-    - redux, @reduxjs/toolkit: Quản lý state  
     - react-native-toast-message: Hiển thị thông báo  
     - @react-native-async-storage/async-storage: Lưu token và cài đặt cục bộ  
     - formik, yup: Xử lý form và validate  
