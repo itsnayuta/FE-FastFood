@@ -96,15 +96,25 @@ export async function processPayment(bill: any): Promise<AxiosResponse> {
 };
 
 export const processOrder = async (orderPayload: any) => {
-  try {
-    const response = await api.post('/orders', orderPayload);
-    return response.data;
-  } catch (error: any) {
-    console.error('Error processing order:', error?.message || error);
-    throw error;
-  }
+    try {
+        const response = await api.post('/orders', orderPayload);
+        return response.data;
+    } catch (error: any) {
+        console.error('Error processing order:', error?.message || error);
+        throw error;
+    }
 };
 
+
+export const getAllOrders = async () => {
+    try {
+        const response = await api.get('/orders');
+        return response.data;
+    } catch (error: any) {
+        console.error('Error fetching all orders:', error?.message || error);
+        return [];
+    }
+};
 // tạo combo
 export const createComboWithProducts = async (comboData: any) => {
   try {
@@ -129,7 +139,6 @@ export const deleteCombo = async (comboId: number) => {
   }
 };
 
-
 export const getOrdersByMemberId = async (memberId: number) => {
     try {
         const response = await api.get(`/orders/member/${memberId}`);
@@ -139,3 +148,4 @@ export const getOrdersByMemberId = async (memberId: number) => {
         return [];
     }
 };
+
