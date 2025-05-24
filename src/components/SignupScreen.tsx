@@ -116,12 +116,14 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
         },
       );
 
-      if (response.data.token) {
+      console.log('[Backend Data] ', response);
+      if (response.data) {
         await authStorage.storeTokens(
           response.data.accessToken,
           response.data.refreshToken,
           response.data.user
         );
+        console.log('[Auth Storage] Tokens and user data stored successfully');
       }
      
       return response.data;
@@ -171,7 +173,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
     if (validateForm()) {
       setLoading(true);
       try {
-        const {user} = await sendIdTokenToBackend(email, name, email, password);
+        const {user} = await sendIdTokenToBackend(email, name, mobile, password);
         if (user.role === 'ADMIN') {
           navigation.dispatch(
             CommonActions.reset({
