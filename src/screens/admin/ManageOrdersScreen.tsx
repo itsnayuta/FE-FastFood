@@ -2,29 +2,22 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, SafeAreaView } from "react-native";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Order } from "../../types";
-import { getOrdersByMemberId } from '../../services/api';
+import { getAllOrders } from '../../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const ManageOrdersScreen = () => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
-    const [user, setUser] = useState<any>({});
-    const [memberId, setMemberId] = useState<string | undefined>(undefined);
 
     useEffect(() => {
-        const fetchOrders = async () => {
-            setLoading(true);
-            const userStr = await AsyncStorage.getItem('user');
-            const user = userStr ? JSON.parse(userStr) : {};
-            const memberId = user.id || user.memberId;
-            if (memberId) {
-                const ordersData = await getOrdersByMemberId(memberId);
-                setOrders(ordersData);
-            }
-            setLoading(false);
-        };
-        fetchOrders();
-    }, []);
+    const fetchOrders = async () => {
+        setLoading(true);
+        const ordersData = await getAllOrders();
+        setOrders(ordersData);
+        setLoading(false);
+    };
+    fetchOrders();
+}, []);
 
     const getStatusColor = (status: string) => {
         switch (status) {
