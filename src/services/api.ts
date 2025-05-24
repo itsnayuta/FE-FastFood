@@ -108,7 +108,7 @@ export const processOrder = async (orderPayload: any) => {
 
 export const getAllOrders = async () => {
     try {
-        const response = await api.get('/orders');
+        const response = await api.get('user/orders');
         return response.data;
     } catch (error: any) {
         console.error('Error fetching all orders:', error?.message || error);
@@ -141,7 +141,7 @@ export const deleteCombo = async (comboId: number) => {
 
 export const getOrdersByMemberId = async (memberId: number) => {
     try {
-        const response = await api.get(`/orders/member/${memberId}`);
+        const response = await api.get(`user/orders/member/${memberId}`);
         return response.data;
     } catch (error: any) {
         console.error('Error fetching orders by memberId:', error?.message || error);

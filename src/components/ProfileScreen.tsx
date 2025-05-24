@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, ActivityIn
 import CustomButton from './CustomButton';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { ParamListBase, useFocusEffect, CommonActions } from '@react-navigation/native';
-import OrderHistory from './OrderHistory';
+// import OrderHistory from './OrderHistory';
 import { userService, UserProfile } from '../services/userService';
 import { orderService, Order } from '../services/orderService';
 import Config from 'react-native-config';
@@ -28,14 +28,14 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
     try {
       setLoading(true);
       setError(null);
-  
+
       const userData = await userService.getUserProfile();
-  
+
       if (userData.picture?.startsWith("/uploads/")) {
         const filename = userData.picture.replace("/uploads/", "");
         userData.picture = `${Config.API_BASE_URL}/uploads/${filename}`;
       }
-  
+
       setUser(userData);
     } catch (err) {
       setError('Failed to load profile. Please try again.');
@@ -151,7 +151,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
             <Text style={styles.seeAllText}>Xem tất cả</Text>
           </TouchableOpacity>
         </View>
-        <OrderHistory onOrderPress={handleOrderPress} />
+        {/* <OrderHistory onOrderPress={handleOrderPress} memberId={user.id} /> */}
       </View>
 
       <View style={styles.logoutContainer}>
