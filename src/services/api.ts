@@ -93,3 +93,13 @@ export const processOrder = async (orderPayload: any) => {
         throw error;
     }
 };
+
+export const getOrdersByMemberId = async (memberId: number) => {
+    try {
+        const response = await api.get(`/orders/member/${memberId}`);
+        return response.data;
+    } catch (error: any) {
+        console.error('Error fetching orders by memberId:', error?.message || error);
+        return [];
+    }
+};

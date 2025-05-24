@@ -1,30 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, SafeAreaView } from "react-native";
 import Ionicons from 'react-native-vector-icons/Ionicons';
-
+import { Order } from "../../types";
+import { getOrdersByMemberId } from '../../services/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const ManageOrdersScreen = () => {
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
-    
-    // Mock data - replace with actual data
-    const orders = [
-        {
-            id: '1',
-            customerName: 'Nguyễn Văn A',
-            orderNumber: '#ORD001',
-            total: '150.000đ',
-            status: 'pending',
-            date: '2024-03-20 14:30'
-        },
-        {
-            id: '2',
-            customerName: 'Trần Thị B',
-            orderNumber: '#ORD002',
-            total: '200.000đ',
-            status: 'completed',
-            date: '2024-03-20 13:15'
-        },
-        // Add more mock data as needed
-    ];
+    const [user, setUser] = useState<any>({});
+    const [memberId, setMemberId] = useState<string | undefined>(undefined);
+
+    useEffect(() => {
+        const fetchOrders = async () => {
+            setLoading(true);
+            const userStr = await AsyncStorage.getItem('user');
+            const user = userStr ? JSON.parse(userStr) : {};
+            const memberId = user.id || user.memberId;
+            if (memberId) {
+                const ordersData = await getOrdersByMemberId(memberId);
+                setOrders(ordersData);
+            }
+            setLoading(false);
+        };
+        fetchOrders();
+    }, []);
 
     const getStatusColor = (status: string) => {
         switch (status) {
