@@ -11,6 +11,8 @@ import ManageProductScreen from "../screens/admin/ManageProductScreen";
 import AddProductScreen from "../screens/admin/AddProductScreen";
 import EditProductScreen from "../screens/admin/EditProductScreen";
 import ManageMenuScreen from "../screens/admin/ManageMenuScreen";
+import ManageComboScreen from "../screens/admin/ManageComboScreen";
+import AddComboScreen from "../screens/admin/AddComboScreen";
 
 // Tạo stack cho từng tab admin
 const AdminHomeStack = createStackNavigator();
@@ -46,6 +48,8 @@ const ManageMenuStackNavigator = () => (
         <ManageProductStack.Screen name="ManageProductMain" component={ManageProductScreen} />
         <ManageProductStack.Screen name="AddProduct" component={AddProductScreen} />
         <ManageProductStack.Screen name="EditProduct" component={EditProductScreen} />
+        <ManageProductStack.Screen name="ManageComboScreen" component={ManageComboScreen} />
+        <ManageProductStack.Screen name="AddComboScreen" component={AddComboScreen} />
     </ManageProductStack.Navigator>
 );
 
