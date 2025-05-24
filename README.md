@@ -15,7 +15,6 @@
 | **Phạm Quang Huy**  | B21DCCN439   | Backend: Quản lý sản phẩm (CRUD sản phẩm, danh mục, combo). Frontend: Hiển thị danh sách sản phẩm, chi tiết sản phẩm, tìm kiếm.                                            |
 | **Đào Tùng Lâm** | B21DCCN475   | Backend: Quản lý đơn hàng (tạo đơn, cập nhật trạng thái, lưu lịch sử). Frontend:Giao diện Home , Giao diện Giỏ hàng, Tìm kiếm món ăn, Xử lý logic thêm giỏ hàng                                |
 | **Nguyễn Thành Long**  | B21DCCN499   | Backend: Tích hợp thanh toán VNPay, khuyến mãi. Frontend: Giao diện thanh toán, nhập mã giảm giá, hiển thị thông tin ưu đãi và voucher. |
-                                                                           |
 
 
 
@@ -134,7 +133,7 @@
 
 ## Thiết kế model
 
-![Database diagram](res/Database_diagram.png)
+![Database diagram](res/database.png)
 
 ## 1. Module Product (Sản phẩm)
 
