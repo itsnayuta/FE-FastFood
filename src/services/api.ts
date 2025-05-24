@@ -96,35 +96,21 @@ export async function processPayment(bill: any): Promise<AxiosResponse> {
 };
 
 export const processOrder = async (orderPayload: any) => {
-  try {
-    const response = await api.post('/orders', orderPayload);
-    return response.data;
-  } catch (error: any) {
-    console.error('Error processing order:', error?.message || error);
-    throw error;
-  }
+    try {
+        const response = await api.post('/orders', orderPayload);
+        return response.data;
+    } catch (error: any) {
+        console.error('Error processing order:', error?.message || error);
+        throw error;
+    }
 };
 
-
-export const createComboWithProducts = async (comboData: any) => {
-  try {
-    const response = await api.post('admin/combos', comboData);
-    console.log('Created Combo:', response.data);
-    return response.data;
-  } catch (error: any) {
-    console.error('Error creating combo:', error?.message || error);
-    throw error;
-  }
-};
-
-// Xóa combo theo id
-export const deleteCombo = async (comboId: number) => {
-  try {
-    const response = await api.delete(`admin/combos/${comboId}`);
-    console.log('Delete combo response:', response.data);
-    return response.data;
-  } catch (error: any) {
-    console.error('Error deleting combo:', error?.message || error);
-    throw error;
-  }
+export const getOrdersByMemberId = async (memberId: number) => {
+    try {
+        const response = await api.get(`/orders/member/${memberId}`);
+        return response.data;
+    } catch (error: any) {
+        console.error('Error fetching orders by memberId:', error?.message || error);
+        return [];
+    }
 };

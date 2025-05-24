@@ -1,12 +1,13 @@
 import React, { FC } from "react";
-import MainNavigator from "./navigation/MainNavigator";
-import { NavigationContainer } from "@react-navigation/native";
 import RootNavigator from "./navigation/RootNavigator";
+import { clearAuthData } from './clearAuth';
 
-
+import { useEffect } from 'react';
 
 const App: React.FC = () => {
-
+    useEffect(() => {
+        clearAuthData();
+    }, []);
     return (
         <RootNavigator />
     );
