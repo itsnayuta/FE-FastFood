@@ -139,7 +139,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         },
       );
       if (response.data) {
-        console.log('Calling sendIdTokenToBackend'); 4
         await authStorage.storeTokens(
           response.data.accessToken,
           response.data.refreshToken,
