@@ -132,3 +132,12 @@ export type RootParamList = {
     AdminRoot: undefined;
     MainRoot: undefined;
 };
+
+export type Order = {
+    id: string;
+    orderNumber: string;
+    customerName: string;
+    date: string;
+    total: string;
+    status: string;
+};
