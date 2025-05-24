@@ -13,7 +13,7 @@
 | ----------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Nguyễn Tiến Thành**  | B21DCCN679   | Backend: Quản lý người dùng (đăng ký, đăng nhập, phân quyền, hồ sơ cá nhân). Frontend: Giao diện đăng nhập, đăng ký, cập nhật hồ sơ, quản lý địa chỉ.                      |
 | **Phạm Quang Huy**  | B21DCCN439   | Backend: Quản lý sản phẩm (CRUD sản phẩm, danh mục, combo). Frontend: Giao diện menu, giao diện chi tiết sản phẩm/combo, Giao diện quản lí combo/sản phẩm cho admin                                           |
-| **Đào Tùng Lâm** | B21DCCN475   | Frontend: Giao diện Home , Giao diện Giỏ hàng, Giao diện theo dõi đơn hàng, Tìm kiếm món ăn, Xử lý chức năng thêm giỏ hàng                                |
+| **Đào Tùng Lâm** | B21DCCN475   | Frontend: Giao diện Home , Giao diện Giỏ hàng,Chức năng tìm kiếm món ăn, Chức năng thêm giỏ hàng                                |
 | **Nguyễn Thành Long**  | B21DCCN499   | Backend: Tích hợp thanh toán VNPay, khuyến mãi. Frontend: Giao diện thanh toán, nhập mã giảm giá, hiển thị thông tin ưu đãi và voucher. |
 
 
