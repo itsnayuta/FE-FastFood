@@ -287,56 +287,45 @@
 ### Giao diện Homepage
 
 <div align="center">
-  <img src="res/image.png" alt="Homepage" width="300"/>
+  <img src="res/homepage.jpg" alt="Homepage" width="300"/>
 </div>
 
 ### Giao diện thực đơn
 
 <div align="center">
-  <img src="res/image-2.png" alt="Discover" width="300"/>
-</div>
-
-### Giao diện chọn món
-
-<div align="center">
-  <img src="res/image-3.png" alt="Favorite" width="300"/>
+  <img src="res/foodlist.jpg" alt="Discover" width="300"/>
 </div>
 
 ### Giao diện giỏ hàng
 
 <div align="center">
-  <img src="res/image-4.png" alt="Profile" width="300"/>
+  <img src="res/cart.jpg" alt="Profile" width="300"/>
 </div>
 
 ### Giao diện thanh toán
 
 <div align="center">
-  <img src="res/image-5.png" alt="Tìm kiếm" width="300"/>
+  <img src="res/payment.jpg" alt="Tìm kiếm" width="300"/>
 </div>
 
 ### Giao diện đã đặt hàng thành công
 
 <div align="center">
-  <img src="res/image-6.png" alt="Trang tạo, sửa, copy đồ uống" width="300"/>
+  <img src="res/paymentsuccess.jpg" alt="Trang tạo, sửa, copy đồ uống" width="300"/>
 </div>
 
 ### Giao diện Login
 
 <div align="center">
-  <img src="res/image-8.png" alt="Trang tạo nguyên liệu" width="300"/>
+  <img src="res/login.jpg" alt="Trang tạo nguyên liệu" width="300"/>
 </div>
 
 ### Giao diện Profile
 
 <div align="center">
-  <img src="res/image-1.png" alt="Trang chi tiết đồ uống" width="300"/>
+  <img src="res/profile.jpg" alt="Trang chi tiết đồ uống" width="300"/>
 </div>
 
-### Trang quản lý admin
-
-<div align="center">
-  <img src="res/image-7.png" alt="Trang quản lý Drink" width="300"/>
-</div>
 
 ## Nguồn tham khảo giao diện
 - [Fast Food KFC Hà Đông](https://www.foody.vn/ha-noi/ga-ran-kfc-quang-trung-ha-dong)
