@@ -16,21 +16,23 @@ const ManageUsersScreen = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    
+
     const fetchAllUsers = async () => {
         try {
-          setLoading(true);
-          setError(null);
-      
-          const userData = await api.get('/admin/get-all-users');
-          setUsers(userData.data);
+            setLoading(true);
+            setError(null);
+
+            const userData = await api.get('/admin/get-all-users');
+            console.log('Fetched users:', userData.data);
+            setUsers(userData.data);
         } catch (err) {
-          Alert.alert('Error', 'Failed to load users. Please try again.');
+            console.error('Error fetching users:', err);
+            Alert.alert('Error', 'Failed to load users. Please try again.');
         } finally {
-          setLoading(false);
+            setLoading(false);
         }
     };
-    
+
     useEffect(() => {
         fetchAllUsers();
     }, []);
@@ -78,7 +80,7 @@ const ManageUsersScreen = () => {
                 </View>
             </View>
             <View style={styles.actionButtons}>
-                <TouchableOpacity 
+                <TouchableOpacity
                     style={[styles.actionButton, styles.deleteButton]}
                     onPress={() => handleDeleteUser(item.id)}
                 >

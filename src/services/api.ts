@@ -23,6 +23,17 @@ export const getCombos = async () => {
   }
 };
 
+export const getAllProducts = async () => {
+  try {
+    const response = await api.get('/products/listAll');
+    console.log('All Products:', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error fetching all products:', error?.message || error);
+    return [];
+  }
+};
+
 export const getProductsByCategoryId = async (categoryId: number) => {
   try {
     const response = await api.get(`/products/searchByCategoryId/${categoryId}`);
@@ -70,18 +81,18 @@ export const getComboByType = async (type: string) => {
 };
 
 export const validateVoucher = async (code: string) => {
-    try {
-        const response = await api.get(`/vouchers/code/${code}`);
-        return response.data;
-    } catch (error: any) {
-        console.warn('Voucher không tồn tại hoặc bị lỗi:', error?.message || error);
-        return null; 
-    }
+  try {
+    const response = await api.get(`/vouchers/code/${code}`);
+    return response.data;
+  } catch (error: any) {
+    console.warn('Voucher không tồn tại hoặc bị lỗi:', error?.message || error);
+    return null;
+  }
 };
 
 export async function processPayment(bill: any): Promise<AxiosResponse> {
-    const response = await api.post('/payments/process', bill);
-    return response;
+  const response = await api.post('/payments/process', bill);
+  return response;
 };
 
 export const processOrder = async (orderPayload: any) => {

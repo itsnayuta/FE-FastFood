@@ -4,6 +4,7 @@ export type MenuTab = {
     name: string;
     data: any[];
     type: 'combo' | 'category';
+    imageUrl?: string;
 };
 
 export const getMenuTabs = async () => {

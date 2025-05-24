@@ -5,6 +5,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { ParamListBase, useFocusEffect, CommonActions } from '@react-navigation/native';
 import OrderHistory from './OrderHistory';
 import { userService, UserProfile } from '../services/userService';
+import { orderService, Order } from '../services/orderService';
 import Config from 'react-native-config';
 import api from '../utils/api';
 import { authStorage } from '../utils/authStorage';
@@ -17,6 +18,11 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [orderStats, setOrderStats] = useState({
+    totalOrders: 0,
+    totalReviews: 0,
+    totalFavorites: 0
+  });
 
   const fetchUserProfile = async () => {
     try {
@@ -39,15 +45,28 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
     }
   };
 
+  const fetchOrderStats = async () => {
+    try {
+      const orders = await orderService.getUserOrders();
+      setOrderStats({
+        totalOrders: orders.length,
+        totalReviews: orders.filter(order => order.status === 'completed').length,
+        totalFavorites: 0 // TODO: Implement favorites feature
+      });
+    } catch (err) {
+      console.error('Error fetching order stats:', err);
+    }
+  };
+
   useFocusEffect(
     React.useCallback(() => {
       fetchUserProfile();
+      fetchOrderStats();
     }, [])
   );
 
   const handleOrderPress = (orderId: string) => {
-    // TODO: Navigate to order details
-    console.log('Order pressed:', orderId);
+    navigation.navigate('OrderDetails', { orderId });
   };
 
   const handleLogout = async () => {
@@ -97,29 +116,29 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>12</Text>
-            <Text style={styles.statLabel}>Orders</Text>
+            <Text style={styles.statNumber}>{orderStats.totalOrders}</Text>
+            <Text style={styles.statLabel}>Đơn hàng</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>3</Text>
-            <Text style={styles.statLabel}>Reviews</Text>
+            <Text style={styles.statNumber}>{orderStats.totalReviews}</Text>
+            <Text style={styles.statLabel}>Đánh giá</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>2</Text>
-            <Text style={styles.statLabel}>Favorites</Text>
+            <Text style={styles.statNumber}>{orderStats.totalFavorites}</Text>
+            <Text style={styles.statLabel}>Yêu thích</Text>
           </View>
         </View>
 
         <View style={styles.actionButtons}>
           <CustomButton
-            title="Edit Profile"
+            title="Cập nhật thông tin"
             onPress={() => navigation.navigate('UpdateProfileScreen')}
             primary
           />
           <CustomButton
-            title="Settings"
+            title="Cài đặt"
             onPress={() => { }}
           />
         </View>
@@ -127,9 +146,9 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Recent Orders</Text>
-          <TouchableOpacity onPress={() => { }}>
-            <Text style={styles.seeAllText}>See All</Text>
+          <Text style={styles.sectionTitle}>Đơn hàng gần đây</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('OrderHistory')}>
+            <Text style={styles.seeAllText}>Xem tất cả</Text>
           </TouchableOpacity>
         </View>
         <OrderHistory onOrderPress={handleOrderPress} />
@@ -137,7 +156,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
       <View style={styles.logoutContainer}>
         <CustomButton
-          title="Logout"
+          title="Đăng xuất"
           onPress={handleLogout}
           primary={false}
         />

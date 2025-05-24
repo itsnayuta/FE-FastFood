@@ -1,44 +1,74 @@
-import React from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from 'react-native';
-
-// Mock order data - replace with real data from your backend
-const mockOrders = [
-  {
-    id: '1',
-    date: '2024-03-20',
-    total: 29.99,
-    status: 'Delivered',
-    items: [
-      { name: 'Classic Burger', quantity: 2, price: 9.99 },
-      { name: 'French Fries', quantity: 1, price: 4.99 },
-    ],
-  },
-  {
-    id: '2',
-    date: '2024-03-15',
-    total: 45.50,
-    status: 'Delivered',
-    items: [
-      { name: 'Chicken Combo', quantity: 1, price: 15.99 },
-      { name: 'Coca Cola', quantity: 2, price: 2.99 },
-      { name: 'Ice Cream', quantity: 1, price: 3.99 },
-    ],
-  },
-];
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { orderService, Order } from '../services/orderService';
 
 type OrderHistoryProps = {
   onOrderPress?: (orderId: string) => void;
 };
 
 const OrderHistory: React.FC<OrderHistoryProps> = ({ onOrderPress }) => {
-  const renderOrderItem = ({ item }: { item: typeof mockOrders[0] }) => (
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const userOrders = await orderService.getUserOrders();
+      setOrders(userOrders);
+    } catch (err) {
+      setError('Failed to load orders');
+      console.error('Error fetching orders:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return '#FFA500';
+      case 'processing':
+        return '#4A90E2';
+      case 'completed':
+        return '#4CAF50';
+      case 'cancelled':
+        return '#FF3B30';
+      default:
+        return '#666';
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'Chờ xử lý';
+      case 'processing':
+        return 'Đang xử lý';
+      case 'completed':
+        return 'Hoàn thành';
+      case 'cancelled':
+        return 'Đã hủy';
+      default:
+        return status;
+    }
+  };
+
+  const renderOrderItem = ({ item }: { item: Order }) => (
     <TouchableOpacity 
       style={styles.orderCard}
       onPress={() => onOrderPress?.(item.id)}
     >
       <View style={styles.orderHeader}>
         <Text style={styles.orderDate}>Order #{item.id}</Text>
-        <Text style={styles.orderStatus}>{item.status}</Text>
+        <Text style={[styles.orderStatus, { color: getStatusColor(item.status) }]}>
+          {getStatusText(item.status)}
+        </Text>
       </View>
       
       <View style={styles.orderItems}>
@@ -46,27 +76,50 @@ const OrderHistory: React.FC<OrderHistoryProps> = ({ onOrderPress }) => {
           <View key={index} style={styles.productItem}>
             <Text style={styles.productName}>{product.name}</Text>
             <Text style={styles.productQuantity}>x{product.quantity}</Text>
-            <Text style={styles.productPrice}>${product.price.toFixed(2)}</Text>
+            <Text style={styles.productPrice}>{product.price.toLocaleString('vi-VN')}đ</Text>
           </View>
         ))}
       </View>
       
       <View style={styles.orderFooter}>
-        <Text style={styles.orderTotal}>Total: ${item.total.toFixed(2)}</Text>
-        <Text style={styles.orderDate}>{item.date}</Text>
+        <Text style={styles.orderTotal}>Total: {item.total.toLocaleString('vi-VN')}đ</Text>
+        <Text style={styles.orderDate}>{new Date(item.date).toLocaleDateString('vi-VN')}</Text>
       </View>
     </TouchableOpacity>
   );
 
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#a51c30" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={fetchOrders}>
+          <Text style={styles.retryButtonText}>Thử lại</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Order History</Text>
       <FlatList
-        data={mockOrders}
+        data={orders}
         renderItem={renderOrderItem}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContainer}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>Chưa có đơn hàng nào</Text>
+          </View>
+        }
       />
     </View>
   );
@@ -77,11 +130,43 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#666',
     marginBottom: 16,
-    paddingHorizontal: 16,
+    textAlign: 'center',
+  },
+  retryButton: {
+    backgroundColor: '#a51c30',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  emptyContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
   },
   listContainer: {
     padding: 16,
@@ -112,7 +197,6 @@ const styles = StyleSheet.create({
   },
   orderStatus: {
     fontSize: 14,
-    color: '#4CAF50',
     fontWeight: '600',
   },
   orderItems: {
